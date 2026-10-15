@@ -21,3 +21,7 @@ push करते ही website update हो जाती है और APK �
 
 Actions → **Build APK** हर बार `android/` बदलने पर चलता है और **Releases** में `TeamKaam.apk` डालता है.
 हमेशा नया APK: `https://github.com/deevadiamonds/TEAM-KAAM-/releases/latest/download/TeamKaam.apk`
+
+## बदलाव कैसे करें
+
+`CLAUDE.md` में पूरा ढाँचा लिखा है (files, data, permissions, test, deploy). `python3 tools/test_flow.py` नकली database पर पूरा app test करता है.
