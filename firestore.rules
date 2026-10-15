@@ -1,0 +1,131 @@
+rules_version = '2';
+
+// Team Kaam — Firestore security rules
+// Admin: the account whose uid is stored in config/admin (set once, at first setup).
+// Members: accounts listed in users/{uid} with active == true.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+    function isAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/config/admin)
+        && get(/databases/$(database)/documents/config/admin).data.uid == request.auth.uid;
+    }
+    function me() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    function isMember() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && me().active == true;
+    }
+    function myMid() {
+      return me().memberId;
+    }
+    function teamDoc(mid) {
+      return get(/databases/$(database)/documents/team/$(mid)).data;
+    }
+    function groupDoc(gid) {
+      return get(/databases/$(database)/documents/groups/$(gid)).data;
+    }
+    // "Task दे सकता है" permission from the Admin Panel
+    function canGiveAll() {
+      let m = teamDoc(myMid());
+      return m.active == true && m.get('canAssign', false) == true;
+    }
+    // "Full control" role inside a group
+    function leads(gid) {
+      let g = groupDoc(gid);
+      return g.active == true && myMid() in g.get('leads', []) && myMid() in g.get('memberIds', []);
+    }
+    function targetOk(d) {
+      return canGiveAll()
+        || (d.kind == 'group' && leads(d.groupId))
+        || (d.kind == 'person'
+            && d.get('viaGroup', null) is string
+            && leads(d.viaGroup)
+            && d.memberId in groupDoc(d.viaGroup).get('memberIds', []));
+    }
+    function manages(t) {
+      return t.get('createdBy', 'owner') == myMid()
+        || (t.kind == 'group' && leads(t.groupId));
+    }
+    function assigned(t) {
+      return (t.kind == 'person' && t.memberId == myMid())
+        || (t.kind == 'group' && myMid() in groupDoc(t.groupId).get('memberIds', []));
+    }
+    function sameTarget() {
+      let a = request.resource.data;
+      let b = resource.data;
+      return a.kind == b.kind
+        && a.get('memberId', null) == b.get('memberId', null)
+        && a.get('groupId', null) == b.get('groupId', null);
+    }
+    // What a person doing the task may change: progress, completion, notes, "seen"
+    function progressOnly() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status', 'doneAt', 'doneDay', 'doneBy', 'doneNote', 'updatedAt', 'log', 'seenBy'])
+        && !(resource.data.status == 'done' && request.resource.data.status != 'done');
+    }
+
+    // ---- setup & app settings ----
+    match /config/admin {
+      allow get: if true;
+      allow create: if signedIn()
+        && !exists(/databases/$(database)/documents/config/admin)
+        && request.resource.data.uid == request.auth.uid;
+      allow update: if isAdmin() && request.resource.data.uid == resource.data.uid;
+      allow delete: if false;
+    }
+    match /config/app {
+      allow get: if true;
+      allow write: if isAdmin();
+    }
+    match /config/counter {
+      allow read: if isAdmin() || isMember();
+      allow write: if (isAdmin() || isMember()) && request.resource.data.n is int;
+    }
+
+    // ---- people (only Admin can add / change) ----
+    match /users/{uid} {
+      allow get: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow list, write: if isAdmin();
+    }
+    match /team/{mid} {
+      allow read: if isAdmin() || isMember();
+      allow write: if isAdmin();
+    }
+    match /groups/{gid} {
+      allow read: if isAdmin() || isMember();
+      allow write: if isAdmin();
+    }
+    match /logins/{loginId} {
+      allow get: if true;
+      allow list, write: if isAdmin();
+    }
+    match /private/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    // ---- tasks ----
+    match /tasks/{taskId} {
+      allow read: if isAdmin() || isMember();
+      allow create: if (isAdmin() && request.resource.data.createdBy == 'owner')
+        || (isMember()
+            && request.resource.data.createdBy == myMid()
+            && request.resource.data.status == 'todo'
+            && targetOk(request.resource.data));
+      allow update: if isAdmin()
+        || (isMember() && (
+              (manages(resource.data)
+                && request.resource.data.get('createdBy', 'owner') == resource.data.get('createdBy', 'owner')
+                && (sameTarget() || targetOk(request.resource.data)))
+              || (assigned(resource.data) && progressOnly())
+           ));
+      allow delete: if isAdmin() || (isMember() && manages(resource.data));
+    }
+  }
+}

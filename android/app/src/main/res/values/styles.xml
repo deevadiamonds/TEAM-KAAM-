@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="tk_blue">#2343B3</color>
+    <color name="tk_paper">#F2F4F9</color>
+    <style name="AppTheme" parent="@android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@color/tk_blue</item>
+        <item name="android:navigationBarColor">#15234A</item>
+        <item name="android:windowBackground">@color/tk_paper</item>
+        <item name="android:colorPrimary">@color/tk_blue</item>
+        <item name="android:colorAccent">@color/tk_blue</item>
+    </style>
+</resources>

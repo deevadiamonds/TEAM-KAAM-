@@ -1,0 +1,47 @@
+plugins {
+    id 'com.android.application'
+}
+
+def appUrl = System.getenv('APP_URL') ?: 'https://example.github.io/team-kaam/'
+def ksFile = file(System.getenv('TK_KEYSTORE') ?: 'release.jks')
+
+android {
+    namespace 'com.teamkaam.app'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'com.teamkaam.app'
+        minSdk 24
+        targetSdk 34
+        versionCode((System.getenv('VERSION_CODE') ?: '1') as Integer)
+        versionName '1.0.' + (System.getenv('VERSION_CODE') ?: '1')
+        resValue 'string', 'app_url', appUrl
+    }
+
+    signingConfigs {
+        release {
+            storeFile ksFile
+            storePassword System.getenv('TK_KS_PASS') ?: 'teamkaam'
+            keyAlias 'teamkaam'
+            keyPassword System.getenv('TK_KS_PASS') ?: 'teamkaam'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+    }
+
+    lint {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+        encoding 'UTF-8'
+    }
+}

@@ -1,0 +1,1871 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Team Kaam</title>
+<meta name="description" content="Team को Task दें, काम पूरा होते ही वहीं mark हो, और रोज़ की Report.">
+<meta name="theme-color" content="#2343B3">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anek+Devanagari:wdth,wght@75..125,400..800&family=Kalam:wght@400&family=Mukta:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: an office register — ruled rows, serial numbers behind a red margin line, a rubber-stamp “पूरा” on finished work. */
+:root{
+  --paper:#F2F4F9; --surface:#FFFFFF; --sunk:#E8ECF4;
+  --ink:#15234A; --ink-2:#526081; --ink-3:#8791AA;
+  --rule:#D8DEEA; --margin:#E3A39E;
+  --accent:#2343B3; --accent-ink:#FFFFFF; --accent-soft:#E2E8FB;
+  --haldi:#D99A00; --haldi-soft:#FFF2C7; --haldi-ink:#5B4300;
+  --ok:#1B7C4C; --ok-ink:#FFFFFF; --ok-soft:#DCF1E5;
+  --late:#BE3329; --late-soft:#FAE2DF;
+  --doing:#9F5E00; --doing-soft:#FBEACF;
+  --wa:#128C4A;
+  --shadow:0 1px 2px rgba(21,35,74,.06),0 6px 18px rgba(21,35,74,.07);
+  --f-display:"Anek Devanagari","Noto Sans Devanagari","Nirmala UI",system-ui,sans-serif;
+  --f-body:"Mukta","Noto Sans Devanagari","Nirmala UI",system-ui,sans-serif;
+  --f-hand:"Kalam","Mukta","Noto Sans Devanagari",cursive;
+  --f-mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0D1220; --surface:#151C2E; --sunk:#1C2439;
+    --ink:#DEE5F6; --ink-2:#9DA8C3; --ink-3:#6C7794;
+    --rule:#263051; --margin:#723238;
+    --accent:#8FA7FF; --accent-ink:#0D1220; --accent-soft:#1F2A52;
+    --haldi:#F5C445; --haldi-soft:#392F12; --haldi-ink:#FBE2A0;
+    --ok:#57CA91; --ok-ink:#0D1220; --ok-soft:#13322A;
+    --late:#FF877B; --late-soft:#3E1C1E;
+    --doing:#F2AE4F; --doing-soft:#3A2A12;
+    --wa:#4FD18B;
+    --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 22px rgba(0,0,0,.28);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0D1220; --surface:#151C2E; --sunk:#1C2439;
+  --ink:#DEE5F6; --ink-2:#9DA8C3; --ink-3:#6C7794;
+  --rule:#263051; --margin:#723238;
+  --accent:#8FA7FF; --accent-ink:#0D1220; --accent-soft:#1F2A52;
+  --haldi:#F5C445; --haldi-soft:#392F12; --haldi-ink:#FBE2A0;
+  --ok:#57CA91; --ok-ink:#0D1220; --ok-soft:#13322A;
+  --late:#FF877B; --late-soft:#3E1C1E;
+  --doing:#F2AE4F; --doing-soft:#3A2A12;
+  --wa:#4FD18B;
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 22px rgba(0,0,0,.28);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+[hidden]{display:none!important}
+img{max-width:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--accent)}
+.gut{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:900px;margin:0 auto}
+.muted{color:var(--ink-2)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mono{font-family:var(--f-mono);font-size:.92em;background:var(--sunk);border-radius:5px;padding:1px 6px;overflow-wrap:anywhere}
+
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--rule)}
+.top-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:12px 6px}
+.brand{min-width:0}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--ink-3)}
+.brand h1{margin:0;font-family:var(--f-display);font-weight:800;font-stretch:112%;font-size:22px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who{display:flex;align-items:center;gap:8px;min-width:0;flex-shrink:1;flex-wrap:wrap;justify-content:flex-end}
+.who .nm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34vw}
+.role{flex:none;font-family:var(--f-display);font-weight:700;font-stretch:90%;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--accent);background:var(--accent-soft);border-radius:4px;padding:1px 7px}
+.ini{flex:none;display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-family:var(--f-display);font-weight:700;font-size:14px}
+@media (max-width:420px){.who .role:not(.keep),.who .ini,.who .nm{display:none}}
+.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{appearance:none;border:0;background:none;cursor:pointer;padding:9px 12px 10px;font-family:var(--f-display);font-weight:600;font-size:15px;color:var(--ink-2);border-bottom:3px solid transparent;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.tab[aria-current="page"]{color:var(--accent);border-bottom-color:var(--accent)}
+.tab .n{font-family:var(--f-body);font-size:11px;font-weight:700;background:var(--sunk);color:var(--ink-2);border-radius:999px;padding:0 7px;line-height:18px}
+.tab .n.hot{background:var(--haldi);color:#2A1F00}
+
+.banner{background:var(--haldi-soft);color:var(--haldi-ink);border-bottom:1px solid var(--rule)}
+.banner .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding-block:9px;font-weight:500}
+.banner.bad{background:var(--late-soft);color:var(--late)}
+
+.main{padding-block:18px 96px}
+.view{display:grid;gap:22px}
+.sec{display:grid;gap:10px;min-width:0}
+.sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.sec-h h2{margin:0;font-family:var(--f-display);font-weight:700;font-stretch:104%;font-size:19px;line-height:1.2;text-wrap:balance}
+.sec-h .muted{font-size:13px}
+.lead{margin:0;font-size:16px;color:var(--ink-2);max-width:62ch}
+.lead b{color:var(--ink)}
+
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.stat{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:10px 12px;display:grid;gap:2px;min-width:0}
+.stat b{font-family:var(--f-display);font-stretch:78%;font-weight:700;font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
+.stat span{font-size:13px;color:var(--ink-2);line-height:1.25}
+.stat.ok b{color:var(--ok)} .stat.late b{color:var(--late)} .stat.acc b{color:var(--accent)}
+@media (max-width:540px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.btn{appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:38px;padding:7px 13px;border-radius:8px;border:1px solid var(--rule);background:var(--surface);color:var(--ink);font-weight:600;font-size:14px;line-height:1.2;cursor:pointer;text-decoration:none;white-space:nowrap}
+.btn:hover{border-color:var(--ink-3)}
+.btn:disabled{opacity:.55;cursor:default}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.btn.okb{background:var(--ok);color:var(--ok-ink);border-color:transparent}
+.btn.danger{color:var(--late);border-color:var(--late)}
+.btn.ghost{background:transparent}
+.btn.sm{min-height:32px;padding:4px 10px;font-size:13px}
+.btn.wa{color:var(--wa);border-color:var(--wa);background:transparent}
+.linkb{appearance:none;background:none;border:0;padding:0;color:var(--accent);font-weight:600;cursor:pointer;font-size:13px;text-align:left}
+.in{width:100%;min-width:0;padding:9px 11px;border:1px solid var(--rule);border-radius:8px;background:var(--surface);color:var(--ink);font-size:16px}
+textarea.in{resize:vertical;line-height:1.45}
+.in:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
+.in:disabled{opacity:.5}
+.fld{display:grid;gap:4px;font-size:13px;color:var(--ink-2);font-weight:500;min-width:0}
+.err{margin:0;color:var(--late);font-weight:600;font-size:14px}
+.okmsg{margin:0;color:var(--ok);font-weight:600;font-size:14px}
+.pwrow{display:flex;gap:6px}
+.pwrow .in{flex:1;font-family:var(--f-mono)}
+
+.composer{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:14px;box-shadow:var(--shadow);display:grid;gap:10px}
+.composer-h{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.composer-h strong{font-family:var(--f-display);font-weight:700;font-stretch:104%;font-size:17px}
+#c-title{min-height:58px}
+.c-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.c-row > *{min-width:0}
+.seg{display:inline-flex;background:var(--sunk);border-radius:9px;padding:3px;gap:2px;flex:none}
+.seg button{appearance:none;border:0;background:transparent;border-radius:7px;padding:6px 12px;font-weight:600;font-size:14px;color:var(--ink-2);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+#c-who{flex:1 1 200px}
+#c-due{flex:0 1 170px;width:auto}
+.quick{display:inline-flex;gap:4px}
+.chk{display:inline-flex;align-items:center;gap:7px;font-weight:500;cursor:pointer;color:var(--ink)}
+.chk input{width:18px;height:18px;accent-color:var(--accent);flex:none}
+details.more summary{cursor:pointer;color:var(--accent);font-weight:600;font-size:14px;list-style:none}
+details.more summary::-webkit-details-marker{display:none}
+details.more[open] summary{margin-bottom:6px}
+.composer-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.composer-foot .muted{font-size:13px}
+.after{background:var(--ok-soft);border:1px solid var(--rule);border-radius:10px;padding:12px;display:grid;gap:8px}
+.after-links{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+
+.reg{background:var(--surface);border:1px solid var(--rule);border-radius:10px;overflow:hidden}
+.t{display:grid;grid-template-columns:58px minmax(0,1fr);border-top:1px solid var(--rule)}
+.reg > .t:first-child{border-top:0}
+.t-no{border-right:2px solid var(--margin);padding:12px 8px 12px 6px;text-align:right;font-variant-numeric:tabular-nums;color:var(--ink-3);display:flex;flex-direction:column;align-items:flex-end}
+.t-no small{font-size:10px;letter-spacing:.04em;line-height:1}
+.t-no span{font-family:var(--f-display);font-weight:600;font-stretch:85%;font-size:16px;line-height:1.2}
+.t.is-new .t-no{background:var(--haldi-soft);color:var(--haldi-ink)}
+.t.is-late .t-no span{color:var(--late)}
+.t-body{padding:11px 14px 12px;display:grid;gap:7px;min-width:0}
+.t-title{appearance:none;background:none;border:0;padding:0;text-align:left;cursor:pointer;font-weight:600;font-size:16px;line-height:1.35;color:var(--ink);overflow-wrap:anywhere}
+.t.is-done .t-title{color:var(--ink-2)}
+.t-meta{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:13px;color:var(--ink-2)}
+.chips{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;line-height:20px;padding:0 8px;border-radius:999px;background:var(--sunk);color:var(--ink-2);white-space:nowrap}
+.c-new{background:var(--haldi);color:#2A1F00}
+.c-urgent{background:var(--late-soft);color:var(--late)}
+.c-late{background:var(--late);color:var(--surface)}
+.c-today,.c-doing{background:var(--doing-soft);color:var(--doing)}
+.c-group,.c-give{background:var(--accent-soft);color:var(--accent)}
+.c-lead{background:var(--ok-soft);color:var(--ok)}
+.c-warn{background:var(--late-soft);color:var(--late)}
+.c-sync{background:var(--sunk);color:var(--ink-3)}
+.seen{color:var(--ok);font-weight:600}
+.unseen{color:var(--ink-3)}
+.done-line{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;color:var(--ink-2)}
+.stamp{display:inline-block;font-family:var(--f-display);font-weight:800;font-stretch:115%;font-size:13px;letter-spacing:.06em;color:var(--ok);border:2px solid currentColor;border-radius:5px;padding:0 7px;line-height:20px;transform:rotate(-4deg)}
+.hand{font-family:var(--f-hand);font-size:15.5px;line-height:1.4;color:var(--ink)}
+p.hand{margin:0;padding-left:10px;border-left:2px solid var(--rule)}
+.t-acts{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.inline{display:grid;gap:8px;background:var(--sunk);border-radius:8px;padding:10px}
+.inline p{margin:0;font-size:14px}
+.t-more{display:grid;gap:10px;border-top:1px dashed var(--rule);padding-top:10px}
+.t-more .det{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.log{list-style:none;margin:0;padding:0;display:grid;gap:5px;font-size:13px;color:var(--ink-2)}
+.log time{font-variant-numeric:tabular-nums;color:var(--ink-3);margin-right:4px}
+.log b{color:var(--ink);font-weight:600}
+.seenlist{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px}
+.empty{background:var(--surface);border:1px dashed var(--rule);border-radius:10px;padding:16px;color:var(--ink-2)}
+.empty b{color:var(--ink)}
+.more-note{font-size:13px;color:var(--ink-3);padding:8px 2px}
+
+.person{appearance:none;width:100%;text-align:left;background:var(--surface);border:0;border-top:1px solid var(--rule);padding:10px 14px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;cursor:pointer;color:var(--ink)}
+.reg > .person:first-child{border-top:0}
+.person:hover{background:var(--sunk)}
+.pn{display:grid;min-width:0}
+.pn b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pn small{color:var(--ink-3);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcs{display:flex;gap:10px;font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.pcs span{display:grid;justify-items:end;line-height:1.1}
+.pcs b{font-family:var(--f-display);font-stretch:85%;font-size:18px;color:var(--ink)}
+.pcs .l b{color:var(--late)} .pcs .o b{color:var(--ok)} .pcs .z b{color:var(--ink-3)}
+
+.filters{display:grid;gap:8px}
+.fchips{display:flex;flex-wrap:wrap;gap:6px}
+.fchip{appearance:none;border:1px solid var(--rule);background:var(--surface);color:var(--ink-2);border-radius:999px;padding:5px 12px;font-weight:600;font-size:13px;cursor:pointer}
+.fchip[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.frow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:8px}
+@media (max-width:520px){.frow{grid-template-columns:1fr}}
+
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:14px;display:grid;gap:12px}
+.panel h3{margin:0;font-family:var(--f-display);font-weight:700;font-size:17px}
+.panel > p{margin:0}
+.form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:end}
+.form-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:640px){.form-grid,.form-grid.two{grid-template-columns:1fr}}
+.form-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+fieldset.perm{border:0;padding:0;margin:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+@media (max-width:640px){fieldset.perm{grid-template-columns:1fr}}
+fieldset.perm legend{font-size:13px;color:var(--ink-2);font-weight:500;padding:0;margin-bottom:6px}
+.radio{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--rule);border-radius:8px;padding:10px 12px;cursor:pointer}
+.radio input{margin-top:3px;accent-color:var(--accent);width:18px;height:18px;flex:none}
+.radio span{display:grid;gap:1px}
+.radio b{font-weight:600}
+.radio small{color:var(--ink-2);font-size:13px;line-height:1.35}
+.radio:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.ov{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px;color:var(--ink-2);align-items:center}
+.ov b{color:var(--ink);font-family:var(--f-display);font-stretch:90%;font-size:20px;margin-right:4px}
+.mrow{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;padding:12px 14px;border-top:1px solid var(--rule);align-items:start}
+.reg > .mrow:first-child{border-top:0}
+.mrow .pn{gap:1px}
+.mrow .tags{display:flex;flex-wrap:wrap;gap:5px 10px;font-size:12.5px;color:var(--ink-2);margin-top:4px;align-items:center}
+.mrow .t-acts,.mrow .inline{margin-top:8px}
+.gm{display:grid}
+.gm-row{display:grid;grid-template-columns:minmax(0,1fr) 160px;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--rule)}
+.gm-row:first-child{border-top:0}
+.gm-row select{padding:6px 8px;font-size:14px}
+.cred{background:var(--haldi-soft);border:1px solid var(--haldi);border-radius:10px;padding:14px;display:grid;gap:10px}
+.cred h3{margin:0;font-family:var(--f-display);font-weight:700;font-size:17px}
+.cred dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 12px;margin:0;align-items:center}
+.cred dt{color:var(--ink-2);font-size:13px}
+.cred dd{margin:0}
+.cred dd .mono{font-size:16px;background:var(--surface);user-select:all}
+.cred p{margin:0;font-size:14px;color:var(--ink)}
+.help{font-size:14px;color:var(--ink-2);margin:0;max-width:72ch}
+.help ol{margin:6px 0 0;padding-left:20px;display:grid;gap:4px}
+.help b{color:var(--ink)}
+
+.login{max-width:440px;margin-inline:auto;width:100%;box-shadow:var(--shadow)}
+.login h2{margin:0;font-family:var(--f-display);font-weight:800;font-stretch:110%;font-size:25px;line-height:1.15}
+.login p{margin:0}
+
+.rep-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.rep-bar .in{width:auto;flex:0 1 180px}
+.rep-day{font-family:var(--f-display);font-weight:700;font-stretch:108%;font-size:20px;margin:0}
+.tbl-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--rule);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:8px 12px;text-align:right;border-top:1px solid var(--rule);white-space:nowrap}
+thead th{border-top:0;font-size:12px;font-weight:600;color:var(--ink-3);letter-spacing:.03em}
+th:first-child,td:first-child{text-align:left}
+td.z{color:var(--ink-3)} td.l{color:var(--late);font-weight:600} td.o{color:var(--ok);font-weight:600}
+.share textarea{font-size:13.5px;min-height:150px}
+
+.state{display:grid;gap:14px;max-width:560px}
+.state h2{margin:0;font-family:var(--f-display);font-weight:800;font-stretch:110%;font-size:26px;line-height:1.15}
+.state p{margin:0;color:var(--ink-2)}
+.ghost-reg .t-body i{display:block;height:12px;border-radius:4px;background:var(--sunk)}
+.ghost-reg .t-body i + i{width:55%}
+
+.toasts{position:fixed;left:0;right:0;bottom:0;z-index:50;display:grid;justify-items:center;gap:6px;pointer-events:none;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.toast{pointer-events:auto;max-width:520px;background:var(--ink);color:var(--surface);border-radius:10px;padding:10px 14px;font-weight:500;box-shadow:var(--shadow);transition:opacity .3s,transform .3s}
+.toast.ok{background:var(--ok);color:var(--ok-ink)}
+.toast.bad{background:var(--late);color:var(--surface)}
+.toast.new{background:var(--haldi);color:#2A1F00}
+.toast.out{opacity:0;transform:translateY(8px)}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="wrap gut">
+      <div class="top-row">
+        <div class="brand">
+          <div class="eyebrow">Team Kaam</div>
+          <h1 id="org">मेरी Team</h1>
+        </div>
+        <div class="who" id="who"></div>
+      </div>
+      <nav class="tabs" id="tabs" aria-label="App के हिस्से"></nav>
+    </div>
+  </header>
+  <div id="banner" class="banner" hidden><div class="wrap gut" id="banner-in"></div></div>
+
+  <main class="main">
+    <div class="wrap gut">
+
+      <section id="v-loading" class="view">
+        <div class="state">
+          <h2 id="load-h">App खुल रहा है…</h2>
+          <p id="load-p">Login के बाद यहाँ आपके Tasks, Team और रोज़ की Report दिखेगी.</p>
+        </div>
+        <div class="reg ghost-reg" aria-hidden="true">
+          <div class="t"><div class="t-no"><small>क्र.</small><span>0001</span></div><div class="t-body"><i></i><i></i></div></div>
+          <div class="t"><div class="t-no"><small>क्र.</small><span>0002</span></div><div class="t-body"><i></i><i></i></div></div>
+          <div class="t"><div class="t-no"><small>क्र.</small><span>0003</span></div><div class="t-body"><i></i><i></i></div></div>
+        </div>
+      </section>
+
+      <section id="v-setup" class="view" hidden>
+        <form id="a-form" class="panel login" autocomplete="off">
+          <div class="eyebrow">पहली बार · Admin setup</div>
+          <h2>Admin का Login बनाएँ</h2>
+          <p class="muted">Admin अपने Gmail से Login करेगा, ताकि password भूलने पर reset link Gmail पर आ सके. Team के हर व्यक्ति का अलग ID और password आप Admin Panel से बनाएँगे.</p>
+          <label class="fld" for="a-email">Admin Gmail<input id="a-email" class="in" type="email" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="100" placeholder="aapka.naam@gmail.com"></label>
+          <label class="fld" for="a-pw">नया Password (कम से कम 6 अक्षर)<input id="a-pw" class="in" type="password" autocomplete="new-password" maxlength="64"></label>
+          <label class="fld" for="a-pw2">Password दोबारा<input id="a-pw2" class="in" type="password" autocomplete="new-password" maxlength="64"></label>
+          <label class="fld" for="a-name">आपका नाम (Team को ऐसे दिखेगा)<input id="a-name" class="in" maxlength="60" placeholder="जैसे: Mayuresh Sir"></label>
+          <label class="fld" for="a-org">Team / Company का नाम<input id="a-org" class="in" maxlength="60" placeholder="जैसे: Sisodiya Group"></label>
+          <p class="err" id="a-err" hidden></p>
+          <div class="form-actions"><button class="btn primary" type="submit" id="a-submit">Admin account बनाएँ</button></div>
+        </form>
+      </section>
+
+      <section id="v-login" class="view" hidden>
+        <form id="l-form" class="panel login">
+          <div class="eyebrow" id="l-org">Login</div>
+          <h2>नमस्ते! Login करें</h2>
+          <p class="muted" id="l-note">Admin ने जो Login ID और password दिया है, वो डालें.</p>
+          <label class="fld" for="l-id">Login ID<input id="l-id" class="in" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="100"></label>
+          <label class="fld" for="l-pw">Password<input id="l-pw" class="in" type="password" autocomplete="current-password" maxlength="64"></label>
+          <label class="chk"><input type="checkbox" id="l-show"> Password दिखाएँ</label>
+          <p class="err" id="l-err" hidden></p>
+          <button class="btn primary" type="submit" id="l-submit">Login</button>
+          <p class="help">Password भूल गए? Admin से नया password बनवाएँ.</p>
+          <button class="linkb" type="button" data-act="forgot-open">मैं Admin हूँ, password भूल गया</button>
+          <div id="forgot" class="inline" hidden>
+            <label class="fld" for="f-email">Admin Gmail<input id="f-email" class="in" type="email" autocapitalize="none" spellcheck="false" maxlength="100"></label>
+            <p class="err" id="f-err" hidden></p>
+            <p class="okmsg" id="f-ok" hidden></p>
+            <div class="t-acts"><button class="btn" type="button" data-act="forgot-send" id="f-send">Reset link Gmail पर भेजें</button></div>
+          </div>
+        </form>
+      </section>
+
+      <section id="v-home" class="view" hidden>
+        <div id="home-stats"></div>
+        <div id="home-noteam" class="empty" hidden>
+          <b>शुरुआत Team से करें.</b> Admin Panel में अपने लोगों को जोड़ें और उनका Login बनाएँ, फिर यहीं से उन्हें Task दें.
+          <div style="margin-top:10px"><button class="btn primary" type="button" data-act="tab" data-v="admin">Admin Panel खोलें</button></div>
+        </div>
+        <form id="composer" class="composer" autocomplete="off" hidden>
+          <div class="composer-h">
+            <strong id="c-mode">नया Task दें</strong>
+            <button type="button" class="linkb" id="c-cancel" data-act="c-cancel" hidden>Edit रद्द करें</button>
+          </div>
+          <label class="sr" for="c-title">क्या काम करना है</label>
+          <textarea id="c-title" class="in" rows="2" maxlength="400" placeholder="क्या काम करना है? जैसे: शोरूम का display शनिवार सुबह तक बदलना है"></textarea>
+          <div class="c-row">
+            <div class="seg" role="group" aria-label="किसको देना है">
+              <button type="button" data-act="kind" data-v="person" aria-pressed="true">एक व्यक्ति</button>
+              <button type="button" data-act="kind" data-v="group" aria-pressed="false">ग्रुप</button>
+            </div>
+            <label class="sr" for="c-who">किसको</label>
+            <select id="c-who" class="in"></select>
+          </div>
+          <div class="c-row">
+            <label class="sr" for="c-due">कब तक</label>
+            <input id="c-due" class="in" type="date">
+            <span class="quick">
+              <button type="button" class="btn sm ghost" data-act="due" data-v="0">आज</button>
+              <button type="button" class="btn sm ghost" data-act="due" data-v="1">कल</button>
+              <button type="button" class="btn sm ghost" data-act="due" data-v="">बिना तारीख</button>
+            </span>
+            <label class="chk"><input id="c-urgent" type="checkbox"> जरूरी</label>
+          </div>
+          <details class="more" id="c-more">
+            <summary>+ और जानकारी लिखें</summary>
+            <label class="sr" for="c-details">और जानकारी</label>
+            <textarea id="c-details" class="in" rows="3" maxlength="2000" placeholder="जैसे: किस customer का है, कहाँ से सामान लेना है, किससे बात करनी है"></textarea>
+          </details>
+          <div class="composer-foot">
+            <span class="muted" id="c-hint">जिसे Task देंगे, उसे app में तुरंत दिखेगा.</span>
+            <button class="btn primary" type="submit" id="c-submit">Task दें</button>
+          </div>
+        </form>
+        <div id="c-after" hidden></div>
+        <div id="home-attn"></div>
+        <div id="home-feed"></div>
+        <div id="home-people"></div>
+      </section>
+
+      <section id="v-mine" class="view" hidden>
+        <div id="mine-body"></div>
+      </section>
+
+      <section id="v-all" class="view" hidden>
+        <div class="filters">
+          <div class="fchips" id="f-status" role="group" aria-label="Status">
+            <button type="button" class="fchip" data-act="fs" data-v="open">बाकी</button>
+            <button type="button" class="fchip" data-act="fs" data-v="late">देर से</button>
+            <button type="button" class="fchip" data-act="fs" data-v="done">पूरे</button>
+            <button type="button" class="fchip" data-act="fs" data-v="all">सब</button>
+          </div>
+          <div class="frow">
+            <label class="sr" for="f-who">किसके Tasks</label>
+            <select id="f-who" class="in"></select>
+            <label class="sr" for="f-q">Task खोजें</label>
+            <input id="f-q" class="in" type="search" placeholder="Task या क्रमांक खोजें">
+          </div>
+        </div>
+        <div id="all-list"></div>
+        <div id="all-older"></div>
+      </section>
+
+      <section id="v-admin" class="view" hidden>
+        <div id="ad-ov" class="ov"></div>
+        <div id="cred-card" hidden></div>
+
+        <form id="m-form" class="panel" autocomplete="off">
+          <h3 id="m-mode">नया Member जोड़ें</h3>
+          <div class="form-grid">
+            <label class="fld" for="m-name">नाम<input id="m-name" class="in" maxlength="60" placeholder="जैसे: रमेश वर्मा"></label>
+            <label class="fld" for="m-role">पद / काम<input id="m-role" class="in" maxlength="60" placeholder="जैसे: Showroom Sales"></label>
+            <label class="fld" for="m-phone">WhatsApp नंबर (सिर्फ Admin को दिखेगा)<input id="m-phone" class="in" inputmode="tel" maxlength="16" placeholder="98xxxxxxxx"></label>
+          </div>
+          <div class="form-grid two">
+            <label class="fld" for="m-lid">Login ID (अंग्रेज़ी अक्षर/अंक)<input id="m-lid" class="in" autocapitalize="none" spellcheck="false" maxlength="60" placeholder="जैसे: ramesh या ramesh@gmail.com"></label>
+            <div class="fld">
+              <label for="m-pw">Password</label>
+              <div class="pwrow"><input id="m-pw" class="in" autocapitalize="none" spellcheck="false" autocomplete="new-password" maxlength="64" placeholder="कम से कम 6 अक्षर"><button type="button" class="btn sm" data-act="gen-pw">अपने आप बनाएँ</button></div>
+            </div>
+          </div>
+          <fieldset class="perm">
+            <legend>Permission</legend>
+            <label class="radio"><input type="radio" name="m-perm" id="m-perm-simple" value="simple" checked><span><b>Simple member</b><small>सिर्फ अपने और अपने ग्रुप के Tasks करेगा</small></span></label>
+            <label class="radio"><input type="radio" name="m-perm" id="m-perm-give" value="give"><span><b>Task दे सकता है</b><small>किसी को भी Task दे सकेगा, अपने दिए Tasks track करेगा और Report देखेगा</small></span></label>
+          </fieldset>
+          <p class="err" id="m-err" hidden></p>
+          <div class="form-actions">
+            <button class="btn primary" type="submit" id="m-submit">Member जोड़ें और Login बनाएँ</button>
+            <button class="btn ghost" type="button" id="m-cancel" data-act="m-cancel" hidden>रद्द करें</button>
+          </div>
+        </form>
+
+        <div class="sec">
+          <div class="sec-h"><h2>Team Members</h2><span class="muted" id="team-count"></span></div>
+          <div id="team-list"></div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-h"><h2>ग्रुप</h2><span class="muted">ग्रुप में हर व्यक्ति का role चुनें</span></div>
+          <form id="g-form" class="panel" autocomplete="off">
+            <h3 id="g-mode">नया ग्रुप बनाएँ</h3>
+            <label class="fld" for="g-name">ग्रुप का नाम<input id="g-name" class="in" maxlength="60" placeholder="जैसे: Showroom Team, Accounts"></label>
+            <div class="fld"><span>किसे जोड़ना है और उसका role</span><div id="g-members" class="gm"></div></div>
+            <p class="help"><b>Full control:</b> इस ग्रुप को और इसके लोगों को Task दे सकते हैं, और ग्रुप के Tasks बदल, हटा या वापस खोल सकते हैं. <b>Simple:</b> सिर्फ ग्रुप के Tasks करेंगे.</p>
+            <p class="err" id="g-err" hidden></p>
+            <div class="form-actions">
+              <button class="btn primary" type="submit" id="g-submit">ग्रुप बनाएँ</button>
+              <button class="btn ghost" type="button" id="g-cancel" data-act="g-cancel" hidden>रद्द करें</button>
+            </div>
+          </form>
+          <div id="group-list"></div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-h"><h2>Settings</h2></div>
+          <form id="s-form" class="panel" autocomplete="off">
+            <h3>नाम</h3>
+            <div class="form-grid">
+              <label class="fld" for="s-org">Team / Company का नाम<input id="s-org" class="in" maxlength="60"></label>
+              <label class="fld" for="s-owner">आपका नाम (Team को ऐसे दिखेगा)<input id="s-owner" class="in" maxlength="60"></label>
+              <div class="form-actions"><button class="btn primary" type="submit">Save करें</button></div>
+            </div>
+          </form>
+          <div class="panel">
+            <h3>Team को app में कैसे लाएँ</h3>
+            <div class="help">
+              <ol>
+                <li>ऊपर Member जोड़ें. उसी समय उनका Login ID और password बनेगा. Password सिर्फ एक बार दिखेगा — उसे WhatsApp पर भेज दें.</li>
+                <li>उन्हें Team Kaam का APK या app link भेजें. App खोलकर वो अपना ID और password डालेंगे.</li>
+                <li>किसी का password भूल जाए तो उनके नाम के आगे “नया Password” दबाएँ. पुराना password तुरंत बंद हो जाएगा.</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="v-report" class="view" hidden>
+        <div class="rep-bar">
+          <button class="btn ghost" type="button" data-act="r-step" data-v="-1" aria-label="पिछला दिन">‹ पिछला</button>
+          <label class="sr" for="r-day">Report की तारीख</label>
+          <input id="r-day" class="in" type="date">
+          <button class="btn ghost" type="button" data-act="r-step" data-v="1" id="r-next" aria-label="अगला दिन">अगला ›</button>
+          <button class="btn ghost" type="button" data-act="r-today">आज</button>
+        </div>
+        <div id="report-body"></div>
+        <div class="panel share">
+          <h3>Report भेजें या रखें</h3>
+          <label class="sr" for="r-text">Report text</label>
+          <textarea id="r-text" class="in" readonly rows="8"></textarea>
+          <div class="t-acts">
+            <button class="btn" type="button" data-act="r-copy">Text copy करें</button>
+            <a class="btn wa" id="r-wa" href="https://wa.me/" target="_blank" rel="noopener">WhatsApp पर भेजें</a>
+            <button class="btn" type="button" data-act="r-csv-day">इस दिन की Excel (CSV)</button>
+            <button class="btn" type="button" data-act="r-csv-all" id="r-csv-all">सारे Tasks की Excel (CSV)</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="v-account" class="view" hidden>
+        <form id="pw-form" class="panel login" autocomplete="off">
+          <div class="eyebrow">मेरा Account</div>
+          <h2>Password बदलें</h2>
+          <p class="muted" id="pw-who"></p>
+          <label class="fld" for="pw-cur">अभी का Password<input id="pw-cur" class="in" type="password" autocomplete="current-password" maxlength="64"></label>
+          <label class="fld" for="pw-new">नया Password (कम से कम 6 अक्षर)<input id="pw-new" class="in" type="password" autocomplete="new-password" maxlength="64"></label>
+          <label class="fld" for="pw-new2">नया Password दोबारा<input id="pw-new2" class="in" type="password" autocomplete="new-password" maxlength="64"></label>
+          <p class="err" id="pw-err" hidden></p>
+          <div class="form-actions">
+            <button class="btn primary" type="submit" id="pw-submit">Password बदलें</button>
+            <button class="btn ghost" type="button" data-act="tab" data-v="">वापस</button>
+          </div>
+        </form>
+      </section>
+
+    </div>
+  </main>
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+</div>
+
+<!--FIREBASE-SDK-->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<!--/FIREBASE-SDK-->
+<script>
+window.TK_CONFIG = {
+  apiKey: "AIzaSyDb6GJql9H0dot4S-d-qj307DIqCdXF9HA",
+  authDomain: "task-management-5b21b.firebaseapp.com",
+  projectId: "task-management-5b21b",
+  storageBucket: "task-management-5b21b.firebasestorage.app",
+  messagingSenderId: "767497921708",
+  appId: "1:767497921708:web:f11013fc847cf0ee87ab09"
+};
+
+/* Firebase adapter: the app talks only to window.TK_BACKEND */
+(function(){
+  if (window.TK_BACKEND || !window.firebase) return;
+  const cfg = window.TK_CONFIG;
+  const app = firebase.initializeApp(cfg);
+  const auth = firebase.auth();
+  const fs = firebase.firestore();
+  try { fs.enablePersistence({synchronizeTabs: true}).catch(() => {}); } catch (e) {}
+  let sec = null;
+  const secondary = () => (sec = sec || firebase.initializeApp(cfg, 'tk-secondary'));
+  const toUser = u => u ? {uid: u.uid, email: u.email} : null;
+  const flatten = (obj, pre, out) => {
+    out = out || {};
+    for (const k of Object.keys(obj)) {
+      const v = obj[k], key = pre ? pre + '.' + k : k;
+      if (v && typeof v === 'object' && !Array.isArray(v) && Object.getPrototypeOf(v) === Object.prototype && Object.keys(v).length) flatten(v, key, out);
+      else out[key] = v;
+    }
+    return out;
+  };
+  const q = (col, filters, opts) => {
+    let r = fs.collection(col);
+    (filters || []).forEach(f => { r = r.where(f[0], f[1], f[2]); });
+    if (opts && opts.orderBy) r = r.orderBy(opts.orderBy[0], opts.orderBy[1] || 'asc');
+    if (opts && opts.limit) r = r.limit(opts.limit);
+    return r;
+  };
+  const docs = snap => snap.docs.map(d => ({id: d.id, data: d.data()}));
+  window.TK_BACKEND = {
+    projectId: cfg.projectId,
+    auth: {
+      onChange: cb => auth.onAuthStateChanged(u => cb(toUser(u))),
+      current: () => toUser(auth.currentUser),
+      signIn: (email, pw) => auth.signInWithEmailAndPassword(email, pw).then(c => toUser(c.user)),
+      signUpSelf: (email, pw) => auth.createUserWithEmailAndPassword(email, pw).then(c => toUser(c.user)),
+      signOut: () => auth.signOut(),
+      createUser: async (email, pw) => {
+        const a = secondary().auth();
+        await a.setPersistence(firebase.auth.Auth.Persistence.NONE);
+        const c = await a.createUserWithEmailAndPassword(email, pw);
+        const uid = c.user.uid;
+        await a.signOut();
+        return uid;
+      },
+      changePassword: async (cur, nw) => {
+        const u = auth.currentUser;
+        if (!u) throw {code: 'auth/no-user'};
+        await u.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(u.email, cur));
+        await u.updatePassword(nw);
+      },
+      sendReset: email => auth.sendPasswordResetEmail(email)
+    },
+    db: {
+      newId: col => fs.collection(col).doc().id,
+      get: path => fs.doc(path).get().then(s => ({exists: s.exists, data: s.exists ? s.data() : null})),
+      set: (path, data) => fs.doc(path).set(data),
+      update: (path, data) => fs.doc(path).update(flatten(data)),
+      del: path => fs.doc(path).delete(),
+      batch: ops => {
+        const b = fs.batch();
+        ops.forEach(o => {
+          const r = fs.doc(o.path);
+          if (o.op === 'set') b.set(r, o.data); else if (o.op === 'update') b.update(r, flatten(o.data)); else b.delete(r);
+        });
+        return b.commit();
+      },
+      watchDoc: (path, cb, err) => fs.doc(path).onSnapshot(s => cb({exists: s.exists, data: s.exists ? s.data() : null}), err),
+      watchQuery: (col, filters, cb, err, opts) => q(col, filters, opts).onSnapshot(snap => {
+        cb(docs(snap), snap.docChanges().map(c => ({type: c.type, id: c.doc.id, pending: c.doc.metadata.hasPendingWrites})), {fromCache: snap.metadata.fromCache});
+      }, err),
+      getQuery: (col, filters, opts) => q(col, filters, opts).get().then(docs)
+    }
+  };
+})();
+</script>
+<script>
+(function(){
+'use strict';
+const B = window.TK_BACKEND;
+const NATIVE = window.TeamKaamApp || null;
+const RECENT_DAYS = 7;
+const HMON = ['जन','फ़र','मार्च','अप्रैल','मई','जून','जुलाई','अग','सित','अक्टू','नव','दिस'];
+const WDAY = ['रविवार','सोमवार','मंगलवार','बुधवार','गुरुवार','शुक्रवार','शनिवार'];
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const pad = n => String(n).padStart(2,'0');
+const dayOf = d => d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+const today = () => dayOf(new Date());
+const parseDay = s => { const p = s.split('-').map(Number); return new Date(p[0], p[1]-1, p[2]); };
+const addDays = (s,n) => { const d = parseDay(s); d.setDate(d.getDate()+n); return dayOf(d); };
+const diffDays = (a,b) => Math.round((parseDay(a) - parseDay(b)) / 86400000);
+const fmtDay = s => { if (!s) return ''; const d = parseDay(s); return d.getDate() + ' ' + HMON[d.getMonth()]; };
+const fmtDayLong = s => { const d = parseDay(s); return WDAY[d.getDay()] + ', ' + d.getDate() + ' ' + HMON[d.getMonth()] + ' ' + d.getFullYear(); };
+const fmtTime = ms => { const d = new Date(ms); let h = d.getHours(); const ap = h >= 12 ? 'pm' : 'am'; h = h % 12 || 12; return h + ':' + pad(d.getMinutes()) + ' ' + ap; };
+const fmtWhen = ms => { if (!ms) return ''; const s = dayOf(new Date(ms)), t = today(); if (s === t) return 'आज ' + fmtTime(ms); if (s === addDays(t,-1)) return 'कल ' + fmtTime(ms); return fmtDay(s) + ', ' + fmtTime(ms); };
+const fmtNo = n => String(n || 0).padStart(4,'0');
+const initial = s => (Array.from(String(s || '?').trim())[0] || '?').toUpperCase();
+const nTasks = n => n + (n === 1 ? ' Task' : ' Tasks');
+const short = (s, n) => { s = String(s || ''); return s.length > n ? s.slice(0, n-1) + '…' : s; };
+const normId = s => String(s || '').trim().toLowerCase();
+const validLoginId = s => /^[a-z0-9][a-z0-9._@-]{2,59}$/.test(s);
+const appLink = () => { try { const u = new URL(location.href); u.hash = ''; u.search = ''; return u.protocol.startsWith('http') ? u.href.replace(/index\.html$/, '') : ''; } catch(e){ return ''; } };
+function normPhone(v){
+  let d = String(v || '').replace(/\D/g,'');
+  if (d.length === 11 && d[0] === '0') d = d.slice(1);
+  if (d.length === 10) d = '91' + d;
+  return d.length >= 11 ? d : '';
+}
+function genPw(){
+  const A = 'abcdefghjkmnpqrstuvwxyz23456789';
+  return Array.from(crypto.getRandomValues(new Uint8Array(8)), x => A[x % A.length]).join('');
+}
+function randTag(){ return Array.from(crypto.getRandomValues(new Uint8Array(5)), x => (x % 36).toString(36)).join(''); }
+function memberEmail(loginId){
+  const slug = loginId.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 24) || 'member';
+  return slug + '-' + randTag() + '@' + B.projectId + '.firebaseapp.com';
+}
+
+const S = {
+  cfgReady:{admin:false, app:false}, authReady:false, authUser:null,
+  adminUid:null, settings:{}, actor:null, myUid:null, resolving:false, loginMsg:'', setupBusy:false,
+  subs:[], live:{team:false, groups:false, open:false, done:false},
+  team:[], teamMap:{}, groups:[], groupMap:{}, openMap:{}, doneMap:{}, tasks:[], taskMap:{}, counter:0,
+  logins:{}, loginOf:{}, phones:{},
+  older:{}, olderCursor:null, olderEnd:false, olderBusy:false,
+  rep:{}, preview:null, tab:null, prevTab:null,
+  fStatus:'open', fWho:'all', fQ:'',
+  expanded:new Set(), doneOpen:null, updOpen:null, reopenOpen:null, confirmDel:null, confirmM:null, confirmG:null, confirmPw:null,
+  editing:null, cKind:'person', lastCreated:null, credCard:null,
+  mEdit:null, gEdit:null, gSel:new Map(),
+  newAtLoad:new Set(), newInitFor:null, seenSent:new Set(), since:0, startedAt:Date.now(), offline:!navigator.onLine
+};
+
+/* ---------- who is acting ---------- */
+const isAdmin = () => S.actor === 'owner' && !S.preview;
+const actorId = () => S.preview || S.actor;
+const me = () => { const a = actorId(); return a && a !== 'owner' ? a : null; };
+const activeMembers = () => S.team.filter(m => m.active !== false);
+const activeGroups = () => S.groups.filter(g => g.active !== false);
+const isActive = id => !!(S.teamMap[id] && S.teamMap[id].active !== false);
+function nameOf(id){
+  if (!id || id === 'owner') return S.settings.ownerName || 'Admin';
+  const m = S.teamMap[id]; return m ? m.name : 'हटाया गया व्यक्ति';
+}
+const leadsOf = g => (g.leads || []).filter(id => (g.memberIds || []).includes(id));
+function perms(mid){
+  const m = S.teamMap[mid];
+  if (!m || m.active === false) return {global:false, leadGroups:[], canGive:false};
+  const leadGroups = activeGroups().filter(g => leadsOf(g).includes(mid)).map(g => g.id);
+  return {global: !!m.canAssign, leadGroups, canGive: !!m.canAssign || leadGroups.length > 0};
+}
+function viewerKind(){
+  if (isAdmin()) return 'admin';
+  const p = perms(actorId());
+  return p.global ? 'giver' : p.canGive ? 'lead' : 'member';
+}
+function targets(){
+  const a = actorId();
+  if (a === 'owner') return {members: activeMembers(), groups: activeGroups()};
+  const p = perms(a);
+  if (p.global) return {members: activeMembers(), groups: activeGroups()};
+  const gs = activeGroups().filter(g => p.leadGroups.includes(g.id));
+  const ids = new Set(gs.flatMap(g => g.memberIds || []));
+  return {members: activeMembers().filter(m => ids.has(m.id)), groups: gs};
+}
+function viaGroupFor(memberId){
+  const a = actorId();
+  if (a === 'owner' || perms(a).global) return null;
+  const g = activeGroups().find(g => leadsOf(g).includes(a) && (g.memberIds || []).includes(memberId));
+  return g ? g.id : null;
+}
+function assignees(t){
+  if (t.kind === 'group') { const g = S.groupMap[t.groupId]; return g ? (g.memberIds || []).filter(isActive) : []; }
+  return t.memberId ? [t.memberId] : [];
+}
+const isMine = (t, mid) => !!mid && assignees(t).includes(mid);
+function assigneeLabel(t){
+  if (t.kind === 'group') { const g = S.groupMap[t.groupId]; return g ? g.name : 'हटाया गया ग्रुप'; }
+  return nameOf(t.memberId);
+}
+function canManage(t){
+  if (isAdmin()) return true;
+  const a = actorId(); if (!a || a === 'owner') return false;
+  if ((t.createdBy || 'owner') === a) return true;
+  if (t.kind === 'group') { const g = S.groupMap[t.groupId]; if (g && g.active !== false && leadsOf(g).includes(a)) return true; }
+  return false;
+}
+function canActOn(t){
+  if (S.preview) return false;
+  if (isAdmin()) return true;
+  return isMine(t, S.actor) || canManage(t);
+}
+const isOpen = t => t.status !== 'done';
+const isLate = t => isOpen(t) && !!t.due && t.due < today();
+function openSort(a,b){
+  const ua = a.priority === 'urgent', ub = b.priority === 'urgent';
+  if (ua !== ub) return ua ? -1 : 1;
+  const da = a.due || '9999-99-99', dbb = b.due || '9999-99-99';
+  if (da !== dbb) return da < dbb ? -1 : 1;
+  return (b.createdAt || 0) - (a.createdAt || 0);
+}
+const doneSort = (a,b) => (b.doneAt || 0) - (a.doneAt || 0);
+function dueInfo(t){
+  if (!t.due || t.status === 'done') return null;
+  const dd = diffDays(t.due, today());
+  if (dd < 0) return {txt: (-dd) + ' दिन देर', cls:'c-late'};
+  if (dd === 0) return {txt:'आज तक', cls:'c-today'};
+  if (dd === 1) return {txt:'कल तक', cls:''};
+  return {txt: fmtDay(t.due) + ' तक', cls:''};
+}
+function statusLabel(t){
+  if (t.status === 'done') return 'पूरा';
+  if (t.status === 'doing') return isLate(t) ? 'चल रहा है (देर)' : 'चल रहा है';
+  return isLate(t) ? 'बाकी (देर)' : 'बाकी';
+}
+function seenSummary(t){ const sb = t.seenBy || {}; return assignees(t).filter(id => sb[id]).map(nameOf).join(', '); }
+function nextNo(){
+  let mx = Math.max(Number(S.counter) || 0, Number(S.settings.lastNo) || 0);
+  for (const t of S.tasks) if ((t.no || 0) > mx) mx = t.no;
+  return mx + 1;
+}
+const logKey = now => now + '_' + randTag();
+const phoneOf = id => isAdmin() ? (S.phones[id] || '') : '';
+function waLink(phone, text){ return 'https://wa.me/' + (phone || '') + '?text=' + encodeURIComponent(text); }
+function taskMsg(t, reminder){
+  let s = (reminder ? 'याद दिला रहा हूँ — Task' : 'नया Task') + ' (क्र. ' + fmtNo(t.no) + ')\n' + t.title;
+  if (t.due) s += '\nकब तक: ' + fmtDay(t.due);
+  if (t.priority === 'urgent') s += '\nजरूरी है';
+  s += '\n\nTeam Kaam app में देखें, और काम होते ही वहीं “पूरा हुआ” दबाएँ.';
+  const l = appLink(); if (l) s += '\n' + l;
+  return s;
+}
+function credMsg(c){
+  const l = appLink();
+  return 'नमस्ते ' + c.name + ',\nआपका Team Kaam login:\n\nLogin ID: ' + c.loginId + '\nPassword: ' + c.pw +
+    (l ? '\nApp link: ' + l : '') +
+    '\n\nApp खोलकर ये ID और password डालें. आपके सारे Tasks इसी app में आएँगे, और काम पूरा होने पर वहीं “पूरा हुआ” दबाना है.';
+}
+
+/* ---------- messages ---------- */
+function authMsg(e){
+  const c = (e && e.code) || '';
+  if (/invalid-credential|wrong-password|user-not-found|invalid-email|invalid-login/.test(c)) return 'Login ID या password गलत है.';
+  if (/too-many-requests/.test(c)) return 'कई बार गलत password डाला गया. थोड़ी देर बाद कोशिश करें.';
+  if (/network-request-failed/.test(c)) return 'Internet नहीं है. Internet चालू करके दोबारा कोशिश करें.';
+  if (/weak-password/.test(c)) return 'Password कम से कम 6 अक्षर का रखें.';
+  if (/email-already-in-use/.test(c)) return 'ये ID पहले से इस्तेमाल में है.';
+  if (/operation-not-allowed/.test(c)) return 'Firebase में Email/Password login चालू नहीं है (Authentication → Sign-in method).';
+  if (/admin-restricted-operation/.test(c)) return 'Firebase में नए account बनाना बंद है (Authentication → Settings → User actions).';
+  if (/permission-denied/.test(c)) return 'Permission नहीं है. Firebase में security rules ठीक से paste हुए हैं, ये देखें.';
+  if (/unavailable|failed-precondition/.test(c)) return 'Internet नहीं है. Internet चालू करके दोबारा कोशिश करें.';
+  return 'कुछ गड़बड़ हुई (' + (c || 'error') + '). दोबारा कोशिश करें.';
+}
+
+/* ---------- writes ---------- */
+async function commit(p){
+  let failed = false;
+  const guarded = p.then(() => 'ok', e => { failed = true; handleWriteErr(e); return 'err'; });
+  const r = await Promise.race([guarded, sleep(2500).then(() => 'queued')]);
+  if (r === 'queued' && !failed) toast('Internet धीमा है. बदलाव phone में save है, Internet आते ही sync होगा.');
+  return r !== 'err';
+}
+function write(path, kind, data){
+  if (S.preview) { toast('Preview में बदलाव save नहीं होते.'); return Promise.resolve(false); }
+  const p = kind === 'set' ? B.db.set(path, data) : kind === 'update' ? B.db.update(path, data) : B.db.del(path);
+  return commit(p);
+}
+function batch(ops){
+  if (S.preview) { toast('Preview में बदलाव save नहीं होते.'); return Promise.resolve(false); }
+  return commit(B.db.batch(ops));
+}
+function handleWriteErr(e){
+  const c = (e && e.code) || '';
+  if (/permission-denied/.test(c)) { toast('ये बदलाव save नहीं हुआ — आपको इसकी permission नहीं है.', 'bad'); return; }
+  if (/not-found/.test(c)) { toast('ये Task अब मौजूद नहीं है.', 'bad'); return; }
+  if (/resource-exhausted/.test(c)) { toast('आज की free सीमा पूरी हो गई है. कल फिर से चलेगा, या Firebase plan बढ़ाएँ.', 'bad'); return; }
+  toast('Save नहीं हुआ (' + (c || 'error') + '). दोबारा कोशिश करें.', 'bad');
+}
+
+/* ---------- alerts ---------- */
+let actx = null;
+document.addEventListener('pointerdown', () => {
+  try { if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); else if (actx.state === 'suspended') actx.resume().catch(() => {}); } catch(e){}
+}, {passive:true});
+function chime(){
+  try {
+    if (navigator.vibrate) navigator.vibrate([120, 60, 120]);
+    if (!actx || actx.state !== 'running') return;
+    const t0 = actx.currentTime;
+    [880, 1320].forEach((f,i) => {
+      const o = actx.createOscillator(), g = actx.createGain(), s = t0 + i*0.13;
+      o.type = 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, s); g.gain.exponentialRampToValueAtTime(0.12, s+0.02); g.gain.exponentialRampToValueAtTime(0.0001, s+0.35);
+      o.connect(g); g.connect(actx.destination); o.start(s); o.stop(s+0.4);
+    });
+  } catch(e){}
+}
+function alertUser(title, body, kind){
+  toast(title + ': ' + body, kind);
+  chime();
+  let bg = document.hidden;
+  try { if (NATIVE && NATIVE.isForeground && !NATIVE.isForeground()) bg = true; } catch(e){}
+  if (NATIVE && NATIVE.notifyUser && bg) { try { NATIVE.notifyUser(title, body); } catch(e){} }
+}
+function toast(msg, kind){
+  const el = document.createElement('div');
+  el.className = 'toast ' + (kind || ''); el.textContent = msg;
+  const box = $('#toasts'); box.appendChild(el);
+  while (box.children.length > 3) box.firstElementChild.remove();
+  setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 320); }, 4600);
+}
+function showErr(sel, msg){ const el = $(sel); el.textContent = msg || ''; el.hidden = !msg; }
+
+/* ---------- render plumbing ---------- */
+let rq = false;
+function render(){ if (rq) return; rq = true; requestAnimationFrame(() => { rq = false; try { doRender(); } catch(e) { console.error(e); } }); }
+function patch(el, html){
+  if (!el || el._h === html) return;
+  const keep = {};
+  el.querySelectorAll('textarea[id],input[id]').forEach(i => { if (i.type !== 'checkbox' && i.type !== 'radio') keep[i.id] = i.value; });
+  const act = document.activeElement;
+  const aid = act && el.contains(act) ? act.id : null;
+  let sel = null; if (aid) { try { sel = [act.selectionStart, act.selectionEnd]; } catch(e){} }
+  el.innerHTML = html; el._h = html;
+  for (const id in keep) { const i = el.querySelector('#' + CSS.escape(id)); if (i) i.value = keep[id]; }
+  if (aid) { const n = el.querySelector('#' + CSS.escape(aid)); if (n) { n.focus({preventScroll:true}); if (sel && sel[0] != null) { try { n.setSelectionRange(sel[0], sel[1]); } catch(e){} } } }
+}
+const VIEWS = ['loading','setup','login','home','mine','all','admin','report','account'];
+function show(v){ VIEWS.forEach(x => { $('#v-' + x).hidden = x !== v; }); }
+function focusLater(sel){ setTimeout(() => { const n = $(sel); if (n) n.focus(); }, 60); }
+
+function tabList(){
+  const k = viewerKind();
+  if (k === 'admin') return [['home','आज'],['all','सभी Tasks'],['admin','Admin Panel'],['report','Report']];
+  if (k === 'giver') return [['mine','मेरे Tasks'],['home','Task दें'],['all','सभी Tasks'],['report','Report']];
+  if (k === 'lead') return [['mine','मेरे Tasks'],['home','Task दें'],['all','सभी Tasks']];
+  return [['mine','मेरे Tasks'],['all','सभी Tasks']];
+}
+
+function doRender(){
+  const org = S.settings.org || 'मेरी Team';
+  $('#org').textContent = org;
+  if (!S.cfgReady.admin || !S.cfgReady.app || !S.authReady || S.resolving) {
+    show('loading'); renderTabs([]); patch($('#who'), '');
+    if (S.offline && !S.cfgReady.admin) { $('#load-h').textContent = 'Internet नहीं है'; $('#load-p').textContent = 'पहली बार app खोलने के लिए Internet चाहिए. Internet चालू करें, app अपने आप खुल जाएगा.'; }
+    return;
+  }
+  renderBanner();
+  if (!S.adminUid) { renderTabs([]); patch($('#who'), ''); show('setup'); prefillSetup(); return; }
+  if (!S.actor) { renderTabs([]); patch($('#who'), ''); show('login'); renderLogin(); return; }
+  const liveReady = S.live.team && S.live.groups && S.live.open && S.live.done;
+  if (!liveReady) { renderWho(); renderTabs([]); show('loading'); $('#load-h').textContent = 'Tasks खुल रहे हैं…'; return; }
+  renderWho();
+  if (S.tab === 'account') { renderTabs(tabList(), true); show('account'); renderAccount(); return; }
+  const tabs = tabList();
+  if (!tabs.find(t => t[0] === S.tab)) S.tab = tabs[0][0];
+  renderTabs(tabs); show(S.tab);
+  ({home:renderHome, mine:renderMine, all:renderAll, admin:renderAdmin, report:renderReport})[S.tab]();
+  const mid = me();
+  const unseen = mid ? S.tasks.filter(t => isOpen(t) && isMine(t, mid) && !(t.seenBy || {})[mid]).length : 0;
+  document.title = (unseen ? '(' + unseen + ') ' : '') + 'Team Kaam';
+}
+
+function renderWho(){
+  const a = S.actor; let h;
+  if (a === 'owner') h = '<span class="role keep">Admin</span>' + (S.settings.ownerName ? '<span class="nm">' + esc(S.settings.ownerName) + '</span>' : '');
+  else {
+    const m = S.teamMap[a] || {name:''}, p = perms(a);
+    const r = p.global ? 'Manager' : p.canGive ? 'Group Lead' : '';
+    h = '<span class="ini" aria-hidden="true">' + esc(initial(m.name)) + '</span><span class="nm">' + esc(m.name) + '</span>' + (r ? '<span class="role">' + r + '</span>' : '');
+  }
+  h += '<button class="linkb" type="button" data-act="tab" data-v="account">Password</button><button class="linkb" type="button" data-act="logout">Logout</button>';
+  patch($('#who'), h);
+}
+function renderBanner(){
+  const b = $('#banner'), bi = $('#banner-in');
+  let h = '', bad = false;
+  if (S.preview && S.actor) h = '<span>आप <b>' + esc(nameOf(S.preview)) + '</b> की नज़र से देख रहे हैं. यहाँ से कुछ बदलेगा नहीं.</span><button class="btn sm" type="button" data-act="preview-exit">Admin view पर लौटें</button>';
+  else if (S.offline && S.actor) { h = '<span>Internet नहीं है. आप काम करते रहें — बदलाव phone में save रहेंगे और Internet आते ही sync होंगे.</span>'; bad = true; }
+  b.hidden = !h; b.classList.toggle('bad', bad); patch(bi, h);
+}
+function renderTabs(tabs, none){
+  const mid = me();
+  let h = '';
+  for (const [k,label] of tabs) {
+    let n = '';
+    if (k === 'mine' && mid) {
+      const open = S.tasks.filter(t => isOpen(t) && isMine(t, mid));
+      const fresh = open.filter(t => !(t.seenBy || {})[mid] || S.newAtLoad.has(t.id)).length;
+      if (open.length) n = '<span class="n' + (fresh ? ' hot' : '') + '">' + open.length + '</span>';
+    }
+    if (k === 'home') { const l = (isAdmin() ? S.tasks : S.tasks.filter(canManage)).filter(isLate).length; if (l) n = '<span class="n hot">' + l + ' देर</span>'; }
+    h += '<button class="tab" type="button" data-act="tab" data-v="' + k + '"' + (!none && S.tab === k ? ' aria-current="page"' : '') + '>' + label + n + '</button>';
+  }
+  patch($('#tabs'), h);
+}
+
+/* ---------- auth flows ---------- */
+function prefillSetup(){
+  const n = $('#a-name');
+  if (!n._filled) { n._filled = true; if (S.authUser && S.authUser.email) $('#a-email').value = S.authUser.email; }
+}
+function renderLogin(){
+  $('#l-org').textContent = S.settings.org ? S.settings.org + ' · Login' : 'Login';
+  const note = $('#l-note');
+  note.textContent = S.loginMsg || 'Admin ने जो Login ID और password दिया है, वो डालें.';
+  note.classList.toggle('err', !!S.loginMsg);
+}
+async function submitSetup(e){
+  e.preventDefault();
+  if (S.setupBusy) return;
+  showErr('#a-err', '');
+  const email = normId($('#a-email').value), pw = $('#a-pw').value, pw2 = $('#a-pw2').value;
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return showErr('#a-err', 'सही Gmail लिखें.');
+  if (pw.length < 6) return showErr('#a-err', 'Password कम से कम 6 अक्षर का रखें.');
+  if (pw !== pw2) return showErr('#a-err', 'दोनों password एक जैसे नहीं हैं.');
+  const btn = $('#a-submit'); btn.disabled = true; btn.textContent = 'बन रहा है…'; S.setupBusy = true;
+  try {
+    let u = B.auth.current();
+    if (!u || u.email !== email) {
+      try { u = await B.auth.signUpSelf(email, pw); }
+      catch (err) { if (/email-already-in-use/.test(err.code || '')) u = await B.auth.signIn(email, pw); else throw err; }
+    }
+    await B.db.set('config/admin', {uid: u.uid, at: Date.now()});
+    await B.db.set('config/app', {org: $('#a-org').value.trim(), ownerName: $('#a-name').value.trim(), lastNo: 0, setupDone: true});
+    S.adminUid = u.uid;
+    toast('Admin account बन गया. अब Admin Panel से Team जोड़ें.', 'ok');
+    S.tab = 'admin';
+    await resolveActor(u);
+  } catch (err) {
+    showErr('#a-err', authMsg(err));
+  }
+  S.setupBusy = false; btn.disabled = false; btn.textContent = 'Admin account बनाएँ';
+  render();
+}
+async function submitLogin(e){
+  e.preventDefault();
+  showErr('#l-err', '');
+  const id = normId($('#l-id').value), pw = $('#l-pw').value;
+  if (!id || !pw) return showErr('#l-err', 'Login ID और password दोनों डालें.');
+  const btn = $('#l-submit'); btn.disabled = true; btn.textContent = 'जाँच हो रही है…';
+  S.loginMsg = '';
+  try {
+    let email = null;
+    if (validLoginId(id)) {
+      const L = await B.db.get('logins/' + id);
+      if (L.exists && L.data && L.data.email) email = L.data.email;
+    }
+    if (!email && id.includes('@')) email = id;
+    if (!email) throw {code:'auth/invalid-credential'};
+    await B.auth.signIn(email, pw);
+    $('#l-pw').value = ''; $('#l-show').checked = false; $('#l-pw').type = 'password';
+  } catch (err) {
+    showErr('#l-err', authMsg(err));
+  }
+  btn.disabled = false; btn.textContent = 'Login';
+}
+async function sendReset(){
+  showErr('#f-err', ''); $('#f-ok').hidden = true;
+  const email = normId($('#f-email').value);
+  if (!email.includes('@')) return showErr('#f-err', 'Admin का Gmail लिखें.');
+  const b = $('#f-send'); b.disabled = true;
+  try { await B.auth.sendReset(email); $('#f-ok').textContent = 'अगर ये Admin का Gmail है, तो reset link भेज दिया गया है. Gmail (spam भी) देखें.'; $('#f-ok').hidden = false; }
+  catch (err) { showErr('#f-err', authMsg(err)); }
+  b.disabled = false;
+}
+async function resolveActor(u){
+  stopSubs();
+  S.actor = null; S.myUid = u ? u.uid : null;
+  if (!u) { render(); return; }
+  if (!S.cfgReady.admin) return;
+  if (S.adminUid && u.uid === S.adminUid) { S.actor = 'owner'; startSubs(); render(); return; }
+  if (!S.adminUid) { render(); return; }
+  S.resolving = true; render();
+  try {
+    const d = await B.db.get('users/' + u.uid);
+    if (d.exists && d.data && d.data.active === true && d.data.memberId) { S.actor = d.data.memberId; S.loginMsg = ''; startSubs(); }
+    else { S.loginMsg = 'ये Login बंद है या बदल गया है. Admin से नया ID और password लें.'; await B.auth.signOut(); }
+  } catch (err) {
+    S.loginMsg = /unavailable|network/.test((err && err.code) || '') ? 'Internet नहीं है. Internet चालू करके दोबारा Login करें.' : 'ये Login बंद है या बदल गया है. Admin से नया ID और password लें.';
+    try { await B.auth.signOut(); } catch(e){}
+  }
+  S.resolving = false; render();
+}
+function resetViewState(){
+  S.preview = null; S.tab = null; S.editing = null; S.lastCreated = null; S.credCard = null;
+  S.newInitFor = null; S.newAtLoad = new Set(); S.expanded = new Set(); S.rep = {}; S.older = {}; S.olderCursor = null; S.olderEnd = false;
+  S.reportDay = null; S.fWho = 'all'; S.fStatus = 'open'; S.fQ = ''; $('#f-q').value = '';
+  S.cKind = 'person'; document.querySelectorAll('#composer .seg button').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.v === 'person')));
+  $('#c-title').value = ''; $('#c-details').value = ''; $('#c-urgent').checked = false; $('#c-who')._h = null;
+  closeInline();
+}
+async function logout(){
+  stopSubs(); resetViewState(); S.actor = null;
+  try { await B.auth.signOut(); } catch(e){}
+  render(); window.scrollTo({top:0});
+}
+async function submitPw(e){
+  e.preventDefault();
+  showErr('#pw-err', '');
+  const cur = $('#pw-cur').value, nw = $('#pw-new').value, nw2 = $('#pw-new2').value;
+  if (!cur) return showErr('#pw-err', 'अभी का password डालें.');
+  if (nw.length < 6) return showErr('#pw-err', 'नया password कम से कम 6 अक्षर का रखें.');
+  if (nw !== nw2) return showErr('#pw-err', 'दोनों नए password एक जैसे नहीं हैं.');
+  const b = $('#pw-submit'); b.disabled = true;
+  try {
+    await B.auth.changePassword(cur, nw);
+    ['#pw-cur','#pw-new','#pw-new2'].forEach(s => { $(s).value = ''; });
+    toast('Password बदल गया. अगली बार नए password से Login करें.', 'ok');
+    S.tab = S.prevTab; render();
+  } catch (err) {
+    showErr('#pw-err', /invalid-credential|wrong-password/.test(err.code || '') ? 'अभी का password गलत है.' : authMsg(err));
+  }
+  b.disabled = false;
+}
+function renderAccount(){
+  const who = S.actor === 'owner' ? 'Admin (' + ((S.authUser && S.authUser.email) || '') + ')' : nameOf(S.actor);
+  $('#pw-who').textContent = who;
+}
+
+/* ---------- live data ---------- */
+function stopSubs(){ S.subs.forEach(u => { try { u(); } catch(e){} }); S.subs = []; S.live = {team:false, groups:false, open:false, done:false}; S.team = []; S.teamMap = {}; S.groups = []; S.groupMap = {}; S.openMap = {}; S.doneMap = {}; S.tasks = []; S.taskMap = {}; S.logins = {}; S.loginOf = {}; S.phones = {}; }
+function onSubErr(e){
+  const c = (e && e.code) || '';
+  console.warn('listen error', c, e);
+  if (/permission-denied/.test(c) && S.actor && S.actor !== 'owner') { S.loginMsg = 'आपका Login बंद कर दिया गया है. Admin से बात करें.'; logout(); }
+  else if (/permission-denied/.test(c)) toast('Data नहीं खुल पाया: Firebase में security rules देखें.', 'bad');
+}
+function mergeTasks(){
+  const m = Object.assign({}, S.openMap);
+  for (const id in S.doneMap) { const a = m[id], b = S.doneMap[id]; if (!a || (b.updatedAt || 0) >= (a.updatedAt || 0)) m[id] = b; }
+  S.taskMap = m; S.tasks = Object.values(m);
+}
+function startSubs(){
+  stopSubs();
+  const W = (...a) => { S.subs.push(B.db.watchQuery(...a)); };
+  const D = (...a) => { S.subs.push(B.db.watchDoc(...a)); };
+  const d0 = new Date(); d0.setHours(0,0,0,0); d0.setDate(d0.getDate() - RECENT_DAYS); S.since = d0.getTime();
+  W('team', [], list => {
+    S.team = list.map(x => Object.assign({id:x.id}, x.data)).sort((a,b) => (a.order || 0) - (b.order || 0));
+    S.teamMap = Object.fromEntries(S.team.map(m => [m.id, m]));
+    S.live.team = true; render();
+  }, onSubErr);
+  W('groups', [], list => {
+    S.groups = list.map(x => Object.assign({id:x.id}, x.data)).sort((a,b) => (a.createdAt || 0) - (b.createdAt || 0));
+    S.groupMap = Object.fromEntries(S.groups.map(g => [g.id, g]));
+    S.live.groups = true; render();
+  }, onSubErr);
+  W('tasks', [['status','in',['todo','doing']]], (list, changes) => {
+    const first = !S.live.open;
+    S.openMap = Object.fromEntries(list.map(x => [x.id, Object.assign({id:x.id}, x.data)]));
+    mergeTasks();
+    if (!first) for (const ch of changes) {
+      if (ch.type !== 'added' || ch.pending) continue;
+      const t = S.taskMap[ch.id];
+      if (!t || S.actor === 'owner' || !isMine(t, S.actor) || (t.createdBy || 'owner') === S.actor) continue;
+      if ((t.seenBy || {})[S.actor] || Date.now() - (t.createdAt || 0) > 10*60000) continue;
+      S.newAtLoad.add(t.id);
+      alertUser('नया Task', short(t.title, 80), 'new');
+    }
+    S.live.open = true; render();
+  }, onSubErr);
+  W('tasks', [['doneAt','>=', S.since]], (list, changes) => {
+    const first = !S.live.done;
+    S.doneMap = Object.fromEntries(list.map(x => [x.id, Object.assign({id:x.id}, x.data)]));
+    mergeTasks();
+    if (!first) for (const ch of changes) {
+      if (ch.type !== 'added' || ch.pending) continue;
+      const t = S.taskMap[ch.id];
+      if (!t || t.status !== 'done' || t.doneBy === S.actor || Date.now() - (t.doneAt || 0) > 10*60000) continue;
+      if (S.actor === 'owner' || (t.createdBy || 'owner') === S.actor) alertUser('✓ ' + nameOf(t.doneBy) + ' ने पूरा किया', short(t.title, 70), 'ok');
+    }
+    S.live.done = true; render();
+  }, onSubErr);
+  D('config/counter', s => { S.counter = s.exists ? (s.data.n || 0) : 0; }, () => {});
+  if (S.actor === 'owner') {
+    W('logins', [], list => {
+      S.logins = Object.fromEntries(list.map(x => [x.id, x.data]));
+      S.loginOf = {};
+      for (const [lid, v] of Object.entries(S.logins)) if (v && v.memberId) S.loginOf[v.memberId] = Object.assign({loginId: lid}, v);
+      render();
+    }, onSubErr);
+    D('private/contacts', s => { S.phones = s.exists ? Object.assign({}, s.data.phones || {}) : {}; render(); }, onSubErr);
+  } else {
+    const uid = S.myUid;
+    D('users/' + uid, s => { if (!s.exists || !s.data || s.data.active !== true) { S.loginMsg = 'आपका Login बंद कर दिया गया है या password बदल दिया गया है. Admin से नया ID और password लें.'; logout(); } }, onSubErr);
+  }
+}
+
+/* ---------- task row ---------- */
+function taskRow(t){
+  const mid = me(), open = isOpen(t), late = isLate(t), mgr = canManage(t);
+  const isNew = !!mid && open && S.newAtLoad.has(t.id) && isMine(t, mid);
+  const can = canActOn(t), exp = S.expanded.has(t.id), due = dueInfo(t);
+  const cls = ['t'];
+  if (isNew) cls.push('is-new'); if (late) cls.push('is-late'); if (!open) cls.push('is-done');
+  let chips = '';
+  if (isNew) chips += '<span class="chip c-new">नया</span>';
+  if (open && t.priority === 'urgent') chips += '<span class="chip c-urgent">जरूरी</span>';
+  if (t.status === 'doing') chips += '<span class="chip c-doing">चल रहा है</span>';
+  if (due) chips += '<span class="chip ' + due.cls + '">' + esc(due.txt) + '</span>';
+  const whoH = t.kind === 'group' ? '<span class="chip c-group">ग्रुप · ' + esc(assigneeLabel(t)) + '</span>' : '<span>' + esc(assigneeLabel(t)) + '</span>';
+  let seenH = '';
+  if (mgr && open && !(mid && t.kind !== 'group' && isMine(t, mid))) {
+    const ids = assignees(t), sb = t.seenBy || {};
+    if (t.kind === 'group') { const n = ids.filter(id => sb[id]).length; seenH = n ? '<span class="seen">✓✓ ' + n + '/' + ids.length + ' ने देखा</span>' : '<span class="unseen">किसी ने नहीं देखा</span>'; }
+    else if (ids[0]) seenH = sb[ids[0]] ? '<span class="seen">✓✓ देखा ' + esc(fmtWhen(sb[ids[0]])) + '</span>' : '<span class="unseen">✓ अभी नहीं देखा</span>';
+  }
+  let doneH = '';
+  if (!open) {
+    doneH = '<div class="done-line"><span class="stamp">पूरा</span><span>' + esc(nameOf(t.doneBy)) + ' · ' + esc(fmtWhen(t.doneAt)) + '</span></div>';
+    if (t.doneNote) doneH += '<p class="hand">' + esc(t.doneNote) + '</p>';
+  }
+  const mineNow = isMine(t, S.actor);
+  let acts = '';
+  if (can && open) {
+    if (t.status === 'todo' && mineNow) acts += '<button class="btn sm" type="button" data-act="start" data-id="' + t.id + '">काम शुरू किया</button>';
+    acts += '<button class="btn sm okb" type="button" data-act="done-open" data-id="' + t.id + '">' + (mineNow ? 'पूरा हुआ' : 'पूरा mark करें') + '</button>';
+    acts += '<button class="btn sm" type="button" data-act="upd-open" data-id="' + t.id + '">Update लिखें</button>';
+  }
+  if (mgr && !S.preview) {
+    if (!open) acts += '<button class="btn sm" type="button" data-act="reopen-open" data-id="' + t.id + '">वापस खोलें</button>';
+    if (open) acts += '<button class="btn sm ghost" type="button" data-act="edit" data-id="' + t.id + '">Edit</button>';
+    acts += '<button class="btn sm ghost" type="button" data-act="del" data-id="' + t.id + '">हटाएँ</button>';
+  }
+  acts += '<button class="linkb" type="button" data-act="expand" data-id="' + t.id + '" aria-expanded="' + exp + '">' + (exp ? 'कम दिखाएँ' : 'पूरा देखें') + '</button>';
+
+  let inline = '';
+  const cancel = '<button class="btn ghost" type="button" data-act="inline-cancel">रद्द करें</button>';
+  if (S.doneOpen === t.id && can && open) inline = '<div class="inline"><label class="fld" for="note-' + t.id + '">क्या किया? (Task देने वाले को दिखेगा, लिखना जरूरी नहीं)<textarea id="note-' + t.id + '" class="in" rows="2" maxlength="600" placeholder="जैसे: Display बदल दिया, photo group में डाल दी"></textarea></label><div class="t-acts"><button class="btn okb" type="button" data-act="done-confirm" data-id="' + t.id + '">पूरा mark करें</button>' + cancel + '</div></div>';
+  else if (S.updOpen === t.id && can) inline = '<div class="inline"><label class="fld" for="upd-' + t.id + '">Update (जैसे: आधा हो गया, कल तक पूरा होगा)<textarea id="upd-' + t.id + '" class="in" rows="2" maxlength="600"></textarea></label><div class="t-acts"><button class="btn primary" type="button" data-act="upd-save" data-id="' + t.id + '">Update भेजें</button>' + cancel + '</div></div>';
+  else if (S.reopenOpen === t.id && mgr) inline = '<div class="inline"><label class="fld" for="ro-' + t.id + '">वापस क्यों खोल रहे हैं? (Team को दिखेगा)<textarea id="ro-' + t.id + '" class="in" rows="2" maxlength="600" placeholder="जैसे: Display में price tag नहीं लगे"></textarea></label><div class="t-acts"><button class="btn primary" type="button" data-act="reopen-confirm" data-id="' + t.id + '">वापस खोलें</button>' + cancel + '</div></div>';
+  else if (S.confirmDel === t.id && mgr) inline = '<div class="inline"><p>क्र. ' + fmtNo(t.no) + ' हमेशा के लिए हट जाएगा, Report से भी.</p><div class="t-acts"><button class="btn danger" type="button" data-act="del-confirm" data-id="' + t.id + '">हाँ, हटाएँ</button>' + cancel + '</div></div>';
+
+  let more = '';
+  if (exp) {
+    more = '<div class="t-more">';
+    if (t.details) more += '<p class="det">' + esc(t.details) + '</p>';
+    if (mgr) {
+      const ids = assignees(t), sb = t.seenBy || {};
+      if (ids.length) {
+        more += '<div class="seenlist">' + ids.map(id => '<span>' + esc(nameOf(id)) + ': ' + (sb[id] ? '<span class="seen">देखा ' + esc(fmtWhen(sb[id])) + '</span>' : '<span class="unseen">नहीं देखा</span>') + '</span>').join('') + '</div>';
+        if (open) more += '<div class="t-acts"><span class="muted" style="font-size:13px">WhatsApp पर याद दिलाएँ:</span>' + ids.map(id => '<a class="btn sm wa" href="' + esc(waLink(phoneOf(id), taskMsg(t, true))) + '" target="_blank" rel="noopener">' + esc(nameOf(id)) + '</a>').join('') + '</div>';
+      }
+    }
+    const log = Object.values(t.log || {}).sort((a,b) => (a.at || 0) - (b.at || 0));
+    const LBL = {created:'ने Task दिया', edited:'ने Task बदला', started:'ने काम शुरू किया', done:'ने पूरा किया', reopened:'ने वापस खोला', note:'का update'};
+    if (log.length) more += '<ul class="log">' + log.map(e => '<li><time>' + esc(fmtWhen(e.at)) + '</time><b>' + esc(nameOf(e.by)) + '</b> ' + (LBL[e.type] || '') + (e.text ? ': <span class="hand">' + esc(e.text) + '</span>' : '') + '</li>').join('') + '</ul>';
+    more += '</div>';
+  }
+  return '<article class="' + cls.join(' ') + '">' +
+    '<div class="t-no"><small>क्र.</small><span>' + fmtNo(t.no) + '</span></div>' +
+    '<div class="t-body">' +
+      '<button class="t-title" type="button" data-act="expand" data-id="' + t.id + '">' + esc(t.title) + '</button>' +
+      (chips ? '<div class="chips">' + chips + '</div>' : '') +
+      '<div class="t-meta">' + whoH + '<span>' + esc(nameOf(t.createdBy || 'owner')) + ' ने दिया · ' + esc(fmtWhen(t.createdAt)) + '</span>' + seenH + '</div>' +
+      doneH + '<div class="t-acts">' + acts + '</div>' + inline + more +
+    '</div></article>';
+}
+function regList(list, cap){
+  cap = cap || 150;
+  let h = '<div class="reg">' + list.slice(0, cap).map(taskRow).join('') + '</div>';
+  if (list.length > cap) h += '<div class="more-note">पहले ' + cap + ' दिखाए हैं, कुल ' + list.length + '. ऊपर से छाँटें या खोजें.</div>';
+  return h;
+}
+
+/* ---------- home ---------- */
+function renderHome(){
+  const admin = isAdmin(), td = today();
+  const scope = admin ? S.tasks : S.tasks.filter(canManage);
+  const T = targets();
+  const open = scope.filter(isOpen), late = open.filter(isLate);
+  const given = scope.filter(t => t.createdDay === td).length;
+  const doneT = scope.filter(t => t.status === 'done' && t.doneDay === td);
+  patch($('#home-stats'), '<div class="stats">' +
+    '<div class="stat acc"><b>' + given + '</b><span>' + (admin ? 'आज दिए' : 'आज आपने दिए') + '</span></div>' +
+    '<div class="stat ok"><b>' + doneT.length + '</b><span>आज पूरे हुए</span></div>' +
+    '<div class="stat"><b>' + open.length + '</b><span>अभी बाकी</span></div>' +
+    '<div class="stat late"><b>' + late.length + '</b><span>देर से चल रहे</span></div></div>');
+  const canCompose = !S.preview && (T.members.length > 0 || T.groups.length > 0);
+  $('#home-noteam').hidden = !(admin && !activeMembers().length);
+  $('#composer').hidden = !canCompose;
+  if (canCompose) {
+    fillWho();
+    let hint = 'जिसे Task देंगे, उसे app में तुरंत दिखेगा.';
+    if (!admin) { const p = perms(actorId()); hint = p.global ? 'आप Team में किसी को भी Task दे सकते हैं.' : 'आप ' + T.groups.map(g => g.name).join(', ') + ' ग्रुप को और उसके लोगों को Task दे सकते हैं.'; }
+    $('#c-hint').textContent = hint;
+  }
+  renderAfter();
+  const attn = open.filter(t => isLate(t) || t.priority === 'urgent').sort(openSort);
+  let a = '';
+  if (attn.length) a = '<div class="sec"><div class="sec-h"><h2>ध्यान दें</h2><span class="muted">देर से या जरूरी · ' + attn.length + '</span></div>' + regList(attn, 8) +
+    (attn.length > 8 ? '<div><button class="btn sm" type="button" data-act="go-late">सब देखें</button></div>' : '') + '</div>';
+  patch($('#home-attn'), a);
+  let f = '';
+  if (canCompose || admin) {
+    doneT.sort(doneSort);
+    f = '<div class="sec"><div class="sec-h"><h2>' + (admin ? 'आज पूरे हुए' : 'आपके दिए Tasks में आज पूरे हुए') + '</h2><span class="muted">' + nTasks(doneT.length) + '</span></div>' +
+      (doneT.length ? regList(doneT, 12) : '<div class="empty">आज अभी तक कोई Task पूरा mark नहीं हुआ. जैसे ही कोई “पूरा हुआ” दबाएगा, वो यहाँ दिखेगा.</div>') + '</div>';
+    if (!admin) {
+      const mineGiven = open.slice().sort(openSort);
+      f += '<div class="sec"><div class="sec-h"><h2>आपके दिए, अभी बाकी</h2><span class="muted">' + nTasks(mineGiven.length) + '</span></div>' +
+        (mineGiven.length ? regList(mineGiven, 40) : '<div class="empty">आपके दिए सारे Tasks पूरे हैं.</div>') + '</div>';
+    }
+  }
+  patch($('#home-feed'), f);
+  let p = '';
+  const ms = T.members;
+  if (ms.length) {
+    p = '<div class="sec"><div class="sec-h"><h2>किसके पास कितना काम</h2><span class="muted">नाम दबाकर उनके Tasks देखें</span></div><div class="reg">' +
+      ms.map(m => {
+        const mo = S.tasks.filter(t => isOpen(t) && isMine(t, m.id)), ml = mo.filter(isLate).length;
+        const md = S.tasks.filter(t => t.status === 'done' && t.doneDay === td && t.doneBy === m.id).length;
+        return '<button class="person" type="button" data-act="filter-who" data-v="m:' + esc(m.id) + '"><span class="ini" aria-hidden="true">' + esc(initial(m.name)) + '</span><span class="pn"><b>' + esc(m.name) + '</b><small>' + esc(m.role || 'Team') + '</small></span>' +
+          '<span class="pcs"><span class="' + (mo.length ? '' : 'z') + '"><b>' + mo.length + '</b>बाकी</span><span class="' + (ml ? 'l' : 'z') + '"><b>' + ml + '</b>देर</span><span class="' + (md ? 'o' : 'z') + '"><b>' + md + '</b>आज पूरे</span></span></button>';
+      }).join('') + '</div></div>';
+  }
+  patch($('#home-people'), p);
+}
+
+/* ---------- composer ---------- */
+function setKind(k){
+  S.cKind = k;
+  document.querySelectorAll('#composer .seg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === k)));
+  fillWho(true);
+}
+function fillWho(reset){
+  const sel = $('#c-who'); const cur = reset ? '' : sel.value;
+  const T = targets();
+  let h;
+  if (S.cKind === 'group') {
+    h = T.groups.length ? '<option value="">ग्रुप चुनें</option>' + T.groups.map(g => '<option value="' + esc(g.id) + '">' + esc(g.name) + ' (' + (g.memberIds || []).filter(isActive).length + ' लोग)</option>').join('')
+      : '<option value="">' + (isAdmin() ? 'अभी कोई ग्रुप नहीं — Admin Panel में बनाएँ' : 'आप किसी ग्रुप को Task नहीं दे सकते') + '</option>';
+  } else {
+    h = T.members.length ? '<option value="">किसको देना है?</option>' + T.members.map(m => '<option value="' + esc(m.id) + '">' + esc(m.name) + (m.role ? ' · ' + esc(m.role) : '') + '</option>').join('')
+      : '<option value="">अभी कोई व्यक्ति नहीं</option>';
+  }
+  if (sel._h !== h) { sel.innerHTML = h; sel._h = h; }
+  if (cur && sel.querySelector('option[value="' + CSS.escape(cur) + '"]')) sel.value = cur;
+}
+function resetComposer(keepWho){
+  const who = $('#c-who').value;
+  $('#c-title').value = ''; $('#c-details').value = ''; $('#c-urgent').checked = false;
+  $('#c-due').value = today(); $('#c-more').open = false;
+  S.editing = null;
+  $('#c-mode').textContent = 'नया Task दें'; $('#c-submit').textContent = 'Task दें'; $('#c-cancel').hidden = true;
+  if (!keepWho) setKind(S.cKind); else $('#c-who').value = who;
+}
+function fillComposer(t){
+  S.tab = 'home'; S.editing = t.id; S.lastCreated = null;
+  render();
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    setKind(t.kind === 'group' ? 'group' : 'person');
+    $('#c-who').value = t.kind === 'group' ? t.groupId : t.memberId;
+    $('#c-title').value = t.title || ''; $('#c-details').value = t.details || '';
+    $('#c-more').open = !!t.details; $('#c-due').value = t.due || ''; $('#c-urgent').checked = t.priority === 'urgent';
+    $('#c-mode').textContent = 'Edit: क्र. ' + fmtNo(t.no); $('#c-submit').textContent = 'बदलाव save करें'; $('#c-cancel').hidden = false;
+    $('#composer').scrollIntoView({behavior:'smooth', block:'start'});
+    $('#c-title').focus({preventScroll:true});
+  }));
+}
+async function submitComposer(ev){
+  ev.preventDefault();
+  const title = $('#c-title').value.trim();
+  if (!title) { toast('पहले लिखें कि क्या काम करना है.'); $('#c-title').focus(); return; }
+  const who = $('#c-who').value;
+  if (!who) { toast(S.cKind === 'group' ? 'ग्रुप चुनें.' : 'चुनें कि किसको देना है.'); $('#c-who').focus(); return; }
+  const T = targets(), kind = S.cKind;
+  if (kind === 'group' ? !T.groups.find(g => g.id === who) : !T.members.find(m => m.id === who)) { toast('आप इन्हें Task नहीं दे सकते.', 'bad'); return; }
+  const now = Date.now(), by = isAdmin() ? 'owner' : S.actor;
+  const base = { title, details: $('#c-details').value.trim(), kind, memberId: kind === 'person' ? who : null, groupId: kind === 'group' ? who : null,
+    viaGroup: kind === 'person' ? viaGroupFor(who) : null,
+    due: $('#c-due').value || '', priority: $('#c-urgent').checked ? 'urgent' : 'normal', updatedAt: now };
+  const btn = $('#c-submit'); btn.disabled = true;
+  if (S.editing) {
+    const id = S.editing, t = S.taskMap[id];
+    if (!t || !canManage(t)) { btn.disabled = false; toast('ये Task आप नहीं बदल सकते.', 'bad'); return; }
+    const ok = await write('tasks/' + id, 'update', Object.assign({}, base, {log: {[logKey(now)]: {by, type:'edited', at:now}}}));
+    btn.disabled = false;
+    if (ok) { toast('Task बदल दिया गया.', 'ok'); resetComposer(); render(); }
+    return;
+  }
+  const no = nextNo(), id = B.db.newId('tasks');
+  const doc = Object.assign({}, base, { no, status:'todo', createdAt: now, createdDay: today(), createdBy: by, doneAt:null, doneDay:null, doneBy:null, doneNote:'', seenBy:{},
+    log: {[logKey(now)]: {by, type:'created', at:now}} });
+  const ok = await write('tasks/' + id, 'set', doc);
+  btn.disabled = false;
+  if (!ok) return;
+  S.counter = Math.max(S.counter, no);
+  B.db.set('config/counter', {n: no}).catch(() => {});
+  S.lastCreated = Object.assign({id}, doc);
+  resetComposer(true);
+  toast('Task दिया गया · क्र. ' + fmtNo(no), 'ok');
+  render();
+}
+function renderAfter(){
+  const el = $('#c-after');
+  const lc = S.lastCreated ? (S.taskMap[S.lastCreated.id] || S.lastCreated) : null;
+  if (!lc || S.preview) { el.hidden = true; patch(el, ''); return; }
+  const ids = assignees(lc);
+  const to = ids.length === 1 ? esc(nameOf(ids[0])) + ' को' : ids.length + ' लोगों को';
+  const links = ids.map(id => { const ph = phoneOf(id); return '<a class="btn sm wa" href="' + esc(waLink(ph, taskMsg(lc))) + '" target="_blank" rel="noopener">' + esc(nameOf(id)) + (ph || !isAdmin() ? '' : ' (नंबर नहीं जुड़ा)') + '</a>'; }).join('');
+  el.hidden = false;
+  patch(el, '<div class="after"><div><b>क्र. ' + fmtNo(lc.no) + ' दिया गया.</b> ये ' + to + ' app में दिख रहा है. Phone पर भी बताना हो तो WhatsApp करें:</div><div class="after-links">' + links + '<button class="linkb" type="button" data-act="after-close">बंद करें</button></div></div>');
+}
+
+/* ---------- mine ---------- */
+function renderMine(){
+  const mid = me();
+  if (!mid) return;
+  const mine = S.tasks.filter(t => isMine(t, mid));
+  if (S.newInitFor !== mid) {
+    S.newAtLoad = new Set(mine.filter(t => isOpen(t) && !(t.seenBy || {})[mid]).map(t => t.id));
+    S.newInitFor = mid;
+  }
+  const fresh = mine.filter(t => isOpen(t) && S.newAtLoad.has(t.id)).sort(openSort);
+  const open = mine.filter(t => isOpen(t) && !S.newAtLoad.has(t.id)).sort(openSort);
+  const done = mine.filter(t => t.status === 'done').sort(doneSort);
+  const lateN = mine.filter(isLate).length, openN = fresh.length + open.length;
+  let h = '<p class="lead">नमस्ते <b>' + esc(nameOf(mid)) + '</b>. ' +
+    (openN ? 'आपके पास <b>' + openN + '</b> काम बाकी ' + (openN === 1 ? 'है' : 'हैं') + (lateN ? ', जिनमें <b>' + lateN + '</b> देर से चल ' + (lateN === 1 ? 'रहा है' : 'रहे हैं') : '') + '. काम होते ही “पूरा हुआ” दबाएँ.' : 'अभी आपके पास कोई बाकी काम नहीं है.') + '</p>';
+  if (fresh.length) h += '<div class="sec"><div class="sec-h"><h2>नए Tasks</h2><span class="muted">' + fresh.length + '</span></div>' + regList(fresh) + '</div>';
+  h += '<div class="sec"><div class="sec-h"><h2>करने हैं</h2><span class="muted">' + open.length + '</span></div>' +
+    (open.length ? regList(open) : '<div class="empty">' + (fresh.length ? 'बाकी सब काम ऊपर “नए” में हैं.' : 'जब आपको या आपके ग्रुप को Task मिलेगा, वो यहाँ दिखेगा.') + '</div>') + '</div>';
+  if (done.length) h += '<div class="sec"><div class="sec-h"><h2>पिछले ' + RECENT_DAYS + ' दिन में पूरे किए</h2><span class="muted">' + done.length + '</span></div>' + regList(done, 30) + '</div>';
+  patch($('#mine-body'), h);
+  setTimeout(() => markSeen(mine.filter(isOpen)), 900);
+}
+function markSeen(list){
+  if (S.preview || !S.actor || S.actor === 'owner' || document.hidden || S.tab !== 'mine') return;
+  const mid = S.actor;
+  for (const t of list) {
+    if ((t.seenBy || {})[mid] || S.seenSent.has(t.id)) continue;
+    S.seenSent.add(t.id);
+    B.db.update('tasks/' + t.id, {seenBy: {[mid]: Date.now()}}).catch(() => {});
+  }
+}
+
+/* ---------- all ---------- */
+function renderAll(){
+  const sel = $('#f-who'), ms = activeMembers(), gs = activeGroups();
+  const oh = '<option value="all">सबके Tasks</option>' +
+    (ms.length ? '<optgroup label="व्यक्ति">' + ms.map(m => '<option value="m:' + esc(m.id) + '">' + esc(m.name) + '</option>').join('') + '</optgroup>' : '') +
+    (gs.length ? '<optgroup label="ग्रुप">' + gs.map(g => '<option value="g:' + esc(g.id) + '">' + esc(g.name) + '</option>').join('') + '</optgroup>' : '');
+  if (sel._h !== oh) { sel.innerHTML = oh; sel._h = oh; }
+  if (!sel.querySelector('option[value="' + CSS.escape(S.fWho) + '"]')) S.fWho = 'all';
+  sel.value = S.fWho;
+  document.querySelectorAll('#f-status .fchip').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === S.fStatus)));
+  const merged = Object.assign({}, S.older, S.taskMap);
+  let list = Object.values(merged);
+  if (S.fWho.startsWith('m:')) { const id = S.fWho.slice(2); list = list.filter(t => isMine(t, id)); }
+  else if (S.fWho.startsWith('g:')) { const id = S.fWho.slice(2); list = list.filter(t => t.kind === 'group' && t.groupId === id); }
+  if (S.fStatus === 'open') list = list.filter(isOpen).sort(openSort);
+  else if (S.fStatus === 'late') list = list.filter(isLate).sort(openSort);
+  else if (S.fStatus === 'done') list = list.filter(t => !isOpen(t)).sort(doneSort);
+  else list.sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
+  const q = S.fQ.trim().toLowerCase();
+  if (q) { const qd = q.replace(/\D/g,''); list = list.filter(t => (t.title || '').toLowerCase().includes(q) || (t.details || '').toLowerCase().includes(q) || (qd && fmtNo(t.no).includes(qd))); }
+  let h;
+  if (!Object.keys(merged).length) h = '<div class="empty"><b>अभी कोई Task नहीं है.</b> Task मिलते ही यहाँ सबके Tasks दिखेंगे.</div>';
+  else if (!list.length) h = '<div class="empty">इस छँटाई में कोई Task नहीं मिला.</div>';
+  else h = '<div class="sec-h"><span class="muted">' + nTasks(list.length) + '</span></div>' + regList(list);
+  patch($('#all-list'), h);
+  let o = '';
+  if (S.fStatus === 'done' || S.fStatus === 'all') {
+    o = S.olderEnd ? '<p class="more-note">इससे पुराने पूरे Tasks नहीं हैं.</p>'
+      : '<div><button class="btn" type="button" data-act="older"' + (S.olderBusy ? ' disabled' : '') + '>' + (S.olderBusy ? 'खुल रहे हैं…' : (Object.keys(S.older).length ? 'और पुराने पूरे Tasks लाएँ' : RECENT_DAYS + ' दिन से पुराने पूरे Tasks लाएँ')) + '</button></div>';
+  }
+  patch($('#all-older'), o);
+}
+async function loadOlder(){
+  if (S.olderBusy || S.olderEnd) return;
+  S.olderBusy = true; render();
+  try {
+    const before = S.olderCursor || S.since;
+    const list = await B.db.getQuery('tasks', [['doneAt','<', before]], {orderBy:['doneAt','desc'], limit:50});
+    list.forEach(x => { S.older[x.id] = Object.assign({id:x.id}, x.data); });
+    if (list.length) S.olderCursor = list[list.length - 1].data.doneAt;
+    if (list.length < 50) S.olderEnd = true;
+  } catch (e) { toast('पुराने Tasks नहीं खुल पाए. Internet देखें.', 'bad'); }
+  S.olderBusy = false; render();
+}
+
+/* ---------- admin panel ---------- */
+function renderAdmin(){
+  if (!isAdmin()) return;
+  const ms = activeMembers(), gs = activeGroups();
+  const givers = ms.filter(m => m.canAssign).length, noLogin = ms.filter(m => !S.loginOf[m.id]).length;
+  patch($('#ad-ov'), '<span><b>' + ms.length + '</b>Members</span><span><b>' + givers + '</b>Task देने वाले</span><span><b>' + gs.length + '</b>ग्रुप</span>' + (noLogin ? '<span class="chip c-warn">' + noLogin + ' का Login नहीं बना</span>' : ''));
+  const cc = $('#cred-card');
+  if (S.credCard) {
+    const c = S.credCard, ph = S.phones[c.mid];
+    cc.hidden = false;
+    patch(cc, '<div class="cred"><h3>' + esc(c.name) + ' का Login तैयार है</h3><dl><dt>Login ID</dt><dd><span class="mono">' + esc(c.loginId) + '</span></dd><dt>Password</dt><dd><span class="mono">' + esc(c.pw) + '</span></dd></dl>' +
+      '<p>ये password सिर्फ अभी दिख रहा है, बाद में कहीं नहीं दिखेगा. अभी copy करके ' + esc(c.name) + ' को भेज दें, साथ में app का APK या link भी.</p>' +
+      '<div class="t-acts"><button class="btn" type="button" data-act="cred-copy">Login details copy करें</button><a class="btn wa" href="' + esc(waLink(ph, credMsg(c))) + '" target="_blank" rel="noopener">WhatsApp पर भेजें</a><button class="linkb" type="button" data-act="cred-close">भेज दिया, बंद करें</button></div></div>');
+  } else { cc.hidden = true; patch(cc, ''); }
+
+  $('#team-count').textContent = ms.length ? ms.length + ' लोग' : '';
+  let h;
+  if (!ms.length) h = '<div class="empty">अभी कोई member नहीं जुड़ा. ऊपर नाम, Login ID और password डालकर पहला member जोड़ें.</div>';
+  else h = '<div class="reg">' + ms.map(m => {
+    const L = S.loginOf[m.id], ph = S.phones[m.id];
+    const open = S.tasks.filter(t => isOpen(t) && isMine(t, m.id)).length;
+    const groupsH = gs.filter(g => (g.memberIds || []).includes(m.id)).map(g => esc(g.name) + (leadsOf(g).includes(m.id) ? ' (Full control)' : '')).join(', ');
+    const tags = [
+      L ? 'ID: <span class="mono">' + esc(L.loginId) + '</span>' : '<span class="chip c-warn">Login नहीं बना</span>',
+      m.canAssign ? '<span class="chip c-give">Task दे सकते हैं</span>' : '<span class="chip">Simple member</span>',
+      groupsH ? 'ग्रुप: ' + groupsH : '',
+      open + ' बाकी Tasks',
+      ph ? 'WhatsApp: +' + esc(ph) : ''
+    ].filter(Boolean).map(x => '<span>' + x + '</span>').join('');
+    let acts = '<button class="btn sm ghost" type="button" data-act="m-edit" data-v="' + esc(m.id) + '">' + (L ? 'Edit' : 'Login बनाएँ') + '</button>';
+    if (L) acts += '<button class="btn sm ghost" type="button" data-act="m-pw" data-v="' + esc(m.id) + '">नया Password</button>';
+    acts += '<button class="btn sm ghost" type="button" data-act="preview" data-v="' + esc(m.id) + '">इनकी नज़र से देखें</button>' +
+      '<button class="btn sm ghost" type="button" data-act="m-del" data-v="' + esc(m.id) + '">हटाएँ</button>';
+    let conf = '';
+    const cancel = '<button class="btn ghost" type="button" data-act="inline-cancel">रद्द करें</button>';
+    if (S.confirmM === m.id) conf = '<div class="inline"><p>' + esc(m.name) + ' Team से हट जाएँगे और उनका Login तुरंत बंद हो जाएगा. पुराने Tasks Report में रहेंगे' + (open ? ', पर उनके ' + open + ' बाकी Tasks किसी और को देने होंगे' : '') + '.</p><div class="t-acts"><button class="btn danger" type="button" data-act="m-del-confirm" data-v="' + esc(m.id) + '">हाँ, हटाएँ</button>' + cancel + '</div></div>';
+    else if (S.confirmPw === m.id) conf = '<div class="inline"><p>' + esc(m.name) + ' का नया password बनेगा. पुराना password तुरंत बंद होगा और वो हर phone से logout हो जाएँगे.</p><div class="t-acts"><button class="btn primary" type="button" data-act="m-pw-confirm" data-v="' + esc(m.id) + '">हाँ, नया password बनाएँ</button>' + cancel + '</div></div>';
+    return '<div class="mrow"><span class="ini" aria-hidden="true">' + esc(initial(m.name)) + '</span><div class="pn"><b>' + esc(m.name) + '</b><small>' + esc(m.role || '—') + '</small>' +
+      '<div class="tags">' + tags + '</div><div class="t-acts">' + acts + '</div>' + conf + '</div></div>';
+  }).join('') + '</div>';
+  patch($('#team-list'), h);
+
+  renderGroupRows();
+  let g;
+  if (!gs.length) g = '<div class="empty">अभी कोई ग्रुप नहीं. ऊपर नाम लिखें, लोग चुनें, हर एक का role चुनें और “ग्रुप बनाएँ” दबाएँ.</div>';
+  else g = '<div class="reg">' + gs.map(gr => {
+    const mem = (gr.memberIds || []).filter(isActive), leads = leadsOf(gr);
+    const open = S.tasks.filter(t => isOpen(t) && t.kind === 'group' && t.groupId === gr.id).length;
+    let conf = '';
+    if (S.confirmG === gr.id) conf = '<div class="inline"><p>ग्रुप “' + esc(gr.name) + '” हट जाएगा' + (open ? '. इसके ' + open + ' बाकी Tasks किसी को नहीं दिखेंगे' : '') + '.</p><div class="t-acts"><button class="btn danger" type="button" data-act="g-del-confirm" data-v="' + esc(gr.id) + '">हाँ, हटाएँ</button><button class="btn ghost" type="button" data-act="inline-cancel">रद्द करें</button></div></div>';
+    const memH = mem.length ? mem.map(id => esc(nameOf(id)) + (leads.includes(id) ? ' <span class="chip c-lead">Full control</span>' : '')).join(', ') : 'कोई member नहीं';
+    return '<div class="mrow"><span class="ini" aria-hidden="true">' + mem.length + '</span><div class="pn"><b>' + esc(gr.name) + '</b>' +
+      '<div class="tags"><span>' + memH + '</span><span>' + open + ' बाकी Tasks</span></div>' +
+      '<div class="t-acts"><button class="btn sm ghost" type="button" data-act="g-edit" data-v="' + esc(gr.id) + '">Edit</button><button class="btn sm ghost" type="button" data-act="g-del" data-v="' + esc(gr.id) + '">हटाएँ</button></div>' + conf + '</div></div>';
+  }).join('') + '</div>';
+  patch($('#group-list'), g);
+
+  const so = $('#s-org'), sw = $('#s-owner');
+  if (document.activeElement !== so && !so._dirty) so.value = S.settings.org || '';
+  if (document.activeElement !== sw && !sw._dirty) sw.value = S.settings.ownerName || '';
+}
+function renderGroupRows(){
+  const ms = activeMembers();
+  const h = ms.length ? ms.map(m => {
+    const r = S.gSel.get(m.id);
+    return '<div class="gm-row"><label class="chk"><input type="checkbox" data-gm="' + esc(m.id) + '"' + (r ? ' checked' : '') + '> <span>' + esc(m.name) + '</span></label>' +
+      '<select class="in" data-gr="' + esc(m.id) + '" aria-label="' + esc(m.name) + ' का role"' + (r ? '' : ' disabled') + '><option value="simple"' + (r !== 'full' ? ' selected' : '') + '>Simple</option><option value="full"' + (r === 'full' ? ' selected' : '') + '>Full control</option></select></div>';
+  }).join('') : '<span class="muted">पहले ऊपर Team members जोड़ें.</span>';
+  const el = $('#g-members'); if (el._h !== h) { el.innerHTML = h; el._h = h; }
+}
+function resetMember(){
+  S.mEdit = null;
+  ['#m-name','#m-role','#m-phone','#m-lid','#m-pw'].forEach(s => { $(s).value = ''; });
+  $('#m-pw').placeholder = 'कम से कम 6 अक्षर';
+  $('#m-perm-simple').checked = true;
+  $('#m-mode').textContent = 'नया Member जोड़ें'; $('#m-submit').textContent = 'Member जोड़ें और Login बनाएँ'; $('#m-cancel').hidden = true;
+  showErr('#m-err', '');
+}
+async function loginIdTaken(lid, exceptMid){
+  if (S.authUser && S.authUser.email && normId(S.authUser.email) === lid) return true;
+  const local = S.logins[lid];
+  if (local) return local.memberId !== exceptMid;
+  try { const d = await B.db.get('logins/' + lid); return d.exists && d.data && d.data.memberId !== exceptMid; } catch(e){ return false; }
+}
+async function newLogin(mid, lid, pw){
+  const email = memberEmail(lid);
+  const uid = await B.auth.createUser(email, pw);
+  return {email, uid};
+}
+async function submitMember(e){
+  e.preventDefault();
+  showErr('#m-err', '');
+  const name = $('#m-name').value.trim(), role = $('#m-role').value.trim();
+  const rawPh = $('#m-phone').value.trim(), phone = normPhone(rawPh);
+  const lid = normId($('#m-lid').value), pw = $('#m-pw').value.trim(), canAssign = $('#m-perm-give').checked;
+  const editId = S.mEdit, old = editId ? S.loginOf[editId] : null;
+  if (!name) return showErr('#m-err', 'नाम लिखें.');
+  if (rawPh && !phone) return showErr('#m-err', 'WhatsApp नंबर पूरा लिखें (10 अंक).');
+  if (!validLoginId(lid)) return showErr('#m-err', 'Login ID कम से कम 3 अक्षर की हो, और उसमें सिर्फ अंग्रेज़ी अक्षर, अंक, . _ - @ हों.');
+  if (!old && pw.length < 6) return showErr('#m-err', 'Password कम से कम 6 अक्षर का रखें, या “अपने आप बनाएँ” दबाएँ.');
+  if (old && pw && pw.length < 6) return showErr('#m-err', 'नया password कम से कम 6 अक्षर का रखें.');
+  const btn = $('#m-submit'); btn.disabled = true; btn.textContent = 'Save हो रहा है…';
+  const done = msg => { btn.disabled = false; btn.textContent = editId ? 'Save करें' : 'Member जोड़ें और Login बनाएँ'; if (msg) showErr('#m-err', msg); };
+  try {
+    if (await loginIdTaken(lid, editId)) return done('ये Login ID पहले से इस्तेमाल में है. कोई और ID चुनें.');
+    const now = Date.now(), mid = editId || B.db.newId('team');
+    const ops = [];
+    let cred = null, shownPw = null;
+    if (!old || pw) { cred = await newLogin(mid, lid, pw); shownPw = pw; }
+    if (editId) ops.push({op:'update', path:'team/' + mid, data:{name, role, canAssign}});
+    else ops.push({op:'set', path:'team/' + mid, data:{name, role, canAssign, active:true, createdAt:now, order:now}});
+    if (cred) {
+      ops.push({op:'set', path:'users/' + cred.uid, data:{memberId:mid, active:true, at:now}});
+      if (old && old.uid) ops.push({op:'set', path:'users/' + old.uid, data:{memberId:mid, active:false, at:now}});
+      ops.push({op:'set', path:'logins/' + lid, data:{email:cred.email, uid:cred.uid, memberId:mid}});
+    } else if (old && old.loginId !== lid) {
+      ops.push({op:'set', path:'logins/' + lid, data:{email:old.email, uid:old.uid, memberId:mid}});
+    }
+    if (old && old.loginId !== lid) ops.push({op:'delete', path:'logins/' + old.loginId});
+    const phones = Object.assign({}, S.phones);
+    if (phone) phones[mid] = phone; else delete phones[mid];
+    if (JSON.stringify(phones) !== JSON.stringify(S.phones)) ops.push({op:'set', path:'private/contacts', data:{phones}});
+    const ok = await batch(ops);
+    if (!ok) return done('Save नहीं हुआ. दोबारा कोशिश करें.');
+    if (shownPw) S.credCard = {mid, name, loginId: lid, pw: shownPw};
+    else if (old && old.loginId !== lid) toast('Login ID बदल गई. उन्हें नई ID बता दें, password वही है.', 'ok');
+    toast(editId ? 'बदलाव save हो गया.' : name + ' Team में जुड़ गए.', 'ok');
+    done(); resetMember(); render();
+    if (S.credCard) requestAnimationFrame(() => $('#cred-card').scrollIntoView({behavior:'smooth', block:'start'}));
+  } catch (err) { done(authMsg(err)); }
+}
+async function newPassword(mid){
+  const old = S.loginOf[mid]; if (!old) return;
+  const pw = genPw(), now = Date.now();
+  try {
+    const cred = await newLogin(mid, old.loginId, pw);
+    const ok = await batch([
+      {op:'set', path:'users/' + cred.uid, data:{memberId:mid, active:true, at:now}},
+      {op:'set', path:'users/' + old.uid, data:{memberId:mid, active:false, at:now}},
+      {op:'set', path:'logins/' + old.loginId, data:{email:cred.email, uid:cred.uid, memberId:mid}}
+    ]);
+    if (!ok) return;
+    closeInline();
+    S.credCard = {mid, name:nameOf(mid), loginId:old.loginId, pw};
+    render();
+    requestAnimationFrame(() => $('#cred-card').scrollIntoView({behavior:'smooth', block:'start'}));
+  } catch (err) { toast(authMsg(err), 'bad'); render(); }
+}
+async function removeMember(mid){
+  const L = S.loginOf[mid], now = Date.now();
+  const ops = [{op:'update', path:'team/' + mid, data:{active:false}}];
+  if (L) { ops.push({op:'set', path:'users/' + L.uid, data:{memberId:mid, active:false, at:now}}); ops.push({op:'delete', path:'logins/' + L.loginId}); }
+  const ok = await batch(ops);
+  if (!ok) { render(); return; }
+  closeInline(); if (S.mEdit === mid) resetMember();
+  toast(nameOf(mid) + ' Team से हट गए, उनका Login बंद हो गया.');
+  render();
+}
+function resetGroup(){
+  S.gEdit = null; S.gSel = new Map(); $('#g-name').value = '';
+  $('#g-mode').textContent = 'नया ग्रुप बनाएँ'; $('#g-submit').textContent = 'ग्रुप बनाएँ'; $('#g-cancel').hidden = true;
+  showErr('#g-err', ''); renderGroupRows();
+}
+async function submitGroup(e){
+  e.preventDefault();
+  showErr('#g-err', '');
+  const name = $('#g-name').value.trim();
+  if (!name) return showErr('#g-err', 'ग्रुप का नाम लिखें.');
+  const memberIds = [...S.gSel.keys()].filter(isActive);
+  if (!memberIds.length) return showErr('#g-err', 'ग्रुप में कम से कम एक व्यक्ति चुनें.');
+  const leads = memberIds.filter(id => S.gSel.get(id) === 'full');
+  const btn = $('#g-submit'); btn.disabled = true;
+  let ok;
+  if (S.gEdit) ok = await write('groups/' + S.gEdit, 'update', {name, memberIds, leads});
+  else ok = await write('groups/' + B.db.newId('groups'), 'set', {name, memberIds, leads, active:true, createdAt:Date.now()});
+  btn.disabled = false;
+  if (ok) { toast(S.gEdit ? 'ग्रुप बदल दिया गया.' : 'ग्रुप “' + name + '” बन गया.', 'ok'); resetGroup(); render(); }
+}
+async function submitSettings(e){
+  e.preventDefault();
+  const org = $('#s-org').value.trim(), ownerName = $('#s-owner').value.trim();
+  const ok = await write('config/app', 'update', {org, ownerName});
+  if (ok) { $('#s-org')._dirty = false; $('#s-owner')._dirty = false; toast('Settings save हो गईं.', 'ok'); }
+}
+
+/* ---------- report ---------- */
+async function loadRep(D){
+  if (S.rep[D]) return;
+  S.rep[D] = {loading:true};
+  try {
+    const wrap = l => l.map(x => Object.assign({id:x.id}, x.data));
+    const [given, done, after] = await Promise.all([
+      B.db.getQuery('tasks', [['createdDay','==',D]]),
+      B.db.getQuery('tasks', [['doneDay','==',D]]),
+      diffDays(today(), D) <= 62 ? B.db.getQuery('tasks', [['doneDay','>',D]]) : Promise.resolve(null)
+    ]);
+    S.rep[D] = {given: wrap(given), done: wrap(done), after: after ? wrap(after) : null};
+  } catch (e) { S.rep[D] = {failed:true}; }
+  render();
+}
+function reportData(D){
+  const td = today();
+  let given, done, pend;
+  if (D === td) {
+    given = S.tasks.filter(t => t.createdDay === D);
+    done = S.tasks.filter(t => t.status === 'done' && t.doneDay === D);
+    pend = S.tasks.filter(t => isOpen(t) && t.createdDay <= D);
+  } else {
+    const r = S.rep[D];
+    if (!r || r.loading || r.failed) return {state: r && r.failed ? 'failed' : 'loading'};
+    given = r.given; done = r.done;
+    if (r.after) {
+      const m = {};
+      S.tasks.filter(t => isOpen(t) && t.createdDay && t.createdDay <= D).forEach(t => { m[t.id] = t; });
+      r.after.filter(t => t.createdDay && t.createdDay <= D).forEach(t => { m[t.id] = t; });
+      pend = Object.values(m);
+    } else pend = null;
+  }
+  given = given.slice().sort((a,b) => (a.no || 0) - (b.no || 0));
+  done = done.slice().sort((a,b) => (a.doneAt || 0) - (b.doneAt || 0));
+  if (pend) pend = pend.slice().sort(openSort);
+  const late = pend ? pend.filter(t => t.due && t.due < D) : [];
+  const people = activeMembers().map(m => ({ id:m.id, name:m.name,
+    given: given.filter(t => isMine(t, m.id)).length, done: done.filter(t => t.doneBy === m.id).length,
+    pend: pend ? pend.filter(t => isMine(t, m.id)).length : null, late: late.filter(t => isMine(t, m.id)).length }));
+  const groups = activeGroups().map(g => ({ name:g.name,
+    given: given.filter(t => t.kind === 'group' && t.groupId === g.id).length,
+    done: done.filter(t => t.kind === 'group' && t.groupId === g.id).length,
+    pend: pend ? pend.filter(t => t.kind === 'group' && t.groupId === g.id).length : null }));
+  return {state:'ok', given, done, pend, late, people, groups};
+}
+const num = v => v == null ? '—' : v;
+function reportText(D, R){
+  const isToday = D === today(), L = [];
+  L.push((S.settings.org || 'Team') + ' — Daily Report');
+  L.push(fmtDayLong(D));
+  L.push('दिए गए: ' + R.given.length + ' | पूरे: ' + R.done.length + ' | ' + (isToday ? 'अभी बाकी' : 'बाकी') + ': ' + (R.pend ? R.pend.length : '—') + ' | देर: ' + R.late.length);
+  if (R.done.length) { L.push('', '✅ पूरे हुए'); R.done.forEach(t => L.push('• ' + fmtNo(t.no) + ' ' + short(t.title, 70) + ' — ' + nameOf(t.doneBy) + ' (' + fmtTime(t.doneAt) + ')')); }
+  if (R.late.length) { L.push('', '⏰ देर से चल रहे'); R.late.forEach(t => L.push('• ' + fmtNo(t.no) + ' ' + short(t.title, 70) + ' — ' + assigneeLabel(t) + ' (' + fmtDay(t.due) + ' तक था)')); }
+  if (R.people.length) { L.push('', '👥 Team'); R.people.forEach(p => L.push(p.name + ': ' + p.done + ' पूरे, ' + num(p.pend) + ' बाकी' + (p.late ? ', ' + p.late + ' देर' : ''))); }
+  return L.join('\n');
+}
+function renderReport(){
+  if (!S.reportDay) S.reportDay = today();
+  const D = S.reportDay, td = today();
+  const inp = $('#r-day'); if (inp.value !== D) inp.value = D; inp.max = td;
+  $('#r-next').disabled = D >= td;
+  $('#r-csv-all').hidden = !isAdmin();
+  if (D !== td) loadRep(D);
+  const R = reportData(D), isToday = D === td;
+  if (R.state !== 'ok') {
+    patch($('#report-body'), '<div class="sec"><h2 class="rep-day">' + esc(fmtDayLong(D)) + '</h2>' + (R.state === 'failed' ? '<div class="empty">Report नहीं खुल पाई. Internet देखकर <button class="linkb" type="button" data-act="r-retry">दोबारा कोशिश करें</button>.</div>' : '<p class="muted">Report खुल रही है…</p>') + '</div>');
+    $('#r-text').value = ''; return;
+  }
+  let h = '<div class="sec"><h2 class="rep-day">' + esc(fmtDayLong(D)) + (isToday ? ' · आज' : '') + '</h2>' +
+    '<div class="stats"><div class="stat acc"><b>' + R.given.length + '</b><span>दिए गए</span></div><div class="stat ok"><b>' + R.done.length + '</b><span>पूरे हुए</span></div>' +
+    '<div class="stat"><b>' + (R.pend ? R.pend.length : '—') + '</b><span>' + (isToday ? 'अभी बाकी' : 'दिन के अंत में बाकी') + '</span></div><div class="stat late"><b>' + R.late.length + '</b><span>देर से</span></div></div></div>';
+  if (R.people.length) h += '<div class="sec"><div class="sec-h"><h2>हर व्यक्ति का हिसाब</h2></div><div class="tbl-wrap"><table><thead><tr><th>नाम</th><th>दिए गए</th><th>पूरे किए</th><th>बाकी</th><th>देर</th></tr></thead><tbody>' +
+    R.people.map(p => '<tr><td>' + esc(p.name) + '</td><td class="' + (p.given ? '' : 'z') + '">' + p.given + '</td><td class="' + (p.done ? 'o' : 'z') + '">' + p.done + '</td><td class="' + (p.pend ? '' : 'z') + '">' + num(p.pend) + '</td><td class="' + (p.late ? 'l' : 'z') + '">' + p.late + '</td></tr>').join('') + '</tbody></table></div></div>';
+  if (R.groups.length) h += '<div class="sec"><div class="sec-h"><h2>ग्रुप</h2></div><div class="tbl-wrap"><table><thead><tr><th>ग्रुप</th><th>दिए गए</th><th>पूरे</th><th>बाकी</th></tr></thead><tbody>' +
+    R.groups.map(g => '<tr><td>' + esc(g.name) + '</td><td class="' + (g.given ? '' : 'z') + '">' + g.given + '</td><td class="' + (g.done ? 'o' : 'z') + '">' + g.done + '</td><td class="' + (g.pend ? '' : 'z') + '">' + num(g.pend) + '</td></tr>').join('') + '</tbody></table></div></div>';
+  const mini = list => '<div class="reg">' + list.map(t => '<div class="t"><div class="t-no"><small>क्र.</small><span>' + fmtNo(t.no) + '</span></div><div class="t-body"><div class="t-title" style="cursor:default">' + esc(t.title) + '</div><div class="t-meta">' +
+    (t.status === 'done' && t.doneDay === D ? '<span class="stamp">पूरा</span><span>' + esc(nameOf(t.doneBy)) + ' · ' + esc(fmtTime(t.doneAt)) + '</span>' : '<span>' + esc(assigneeLabel(t)) + '</span>' + (t.due ? '<span class="chip ' + (t.due < D ? 'c-late' : '') + '">' + esc(fmtDay(t.due)) + ' तक</span>' : '')) +
+    '</div>' + (t.status === 'done' && t.doneDay === D && t.doneNote ? '<p class="hand">' + esc(t.doneNote) + '</p>' : '') + '</div></div>').join('') + '</div>';
+  h += '<div class="sec"><div class="sec-h"><h2>पूरे हुए काम</h2><span class="muted">' + R.done.length + '</span></div>' + (R.done.length ? mini(R.done) : '<div class="empty">इस दिन कोई Task पूरा mark नहीं हुआ.</div>') + '</div>';
+  if (R.late.length) h += '<div class="sec"><div class="sec-h"><h2>देर से चल रहे</h2><span class="muted">' + R.late.length + '</span></div>' + mini(R.late) + '</div>';
+  if (R.given.length) h += '<div class="sec"><div class="sec-h"><h2>इस दिन दिए गए</h2><span class="muted">' + R.given.length + '</span></div>' + mini(R.given) + '</div>';
+  patch($('#report-body'), h);
+  const txt = reportText(D, R);
+  if ($('#r-text').value !== txt) $('#r-text').value = txt;
+  $('#r-wa').href = 'https://wa.me/?text=' + encodeURIComponent(txt);
+}
+function toCSV(list){
+  const head = ['क्र.','Task','जानकारी','किसको','प्रकार','जरूरी','किसने दिया','दिया (तारीख)','दिया (समय)','कब तक','Status','किसने पूरा किया','पूरा (तारीख)','पूरा (समय)','Note','किसने देखा'];
+  const rows = list.map(t => [fmtNo(t.no), t.title, t.details || '', assigneeLabel(t), t.kind === 'group' ? 'ग्रुप' : 'व्यक्ति', t.priority === 'urgent' ? 'हाँ' : '', nameOf(t.createdBy || 'owner'),
+    t.createdDay || '', t.createdAt ? fmtTime(t.createdAt) : '', t.due || '', statusLabel(t), t.doneBy ? nameOf(t.doneBy) : '', t.doneDay || '', t.doneAt ? fmtTime(t.doneAt) : '', t.doneNote || '', seenSummary(t)]);
+  return [head].concat(rows).map(r => r.map(c => { const s = String(c == null ? '' : c); return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s; }).join(',')).join('\r\n');
+}
+function saveFile(name, text){
+  const data = '﻿' + text;
+  if (NATIVE && NATIVE.saveFile) {
+    try { const p = NATIVE.saveFile(name, data); if (p) { toast('File save हो गई: ' + p, 'ok'); return; } } catch(e){}
+    toast('File save नहीं हुई.', 'bad'); return;
+  }
+  try {
+    const url = URL.createObjectURL(new Blob([data], {type:'text/csv;charset=utf-8'}));
+    const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1500);
+    toast('File download हो रही है.', 'ok');
+  } catch(e){ toast('File save नहीं हुई.', 'bad'); }
+}
+async function copyText(txt, fallbackEl){
+  if (NATIVE && NATIVE.copy) { try { NATIVE.copy(txt); toast('Copy हो गया.', 'ok'); return; } catch(e){} }
+  try { await navigator.clipboard.writeText(txt); toast('Copy हो गया.', 'ok'); }
+  catch(e) { if (fallbackEl) { fallbackEl.focus(); fallbackEl.select(); } toast('Copy नहीं हो पाया. Text खुद select करके copy करें.'); }
+}
+
+/* ---------- task actions ---------- */
+function setStatus(t, status, note){
+  const now = Date.now(), by = isAdmin() ? 'owner' : S.actor, k = logKey(now);
+  let data;
+  if (status === 'doing') data = {status:'doing', updatedAt:now, log:{[k]:{by, type:'started', at:now}}};
+  else if (status === 'done') data = {status:'done', doneAt:now, doneDay:today(), doneBy:by, doneNote:note || '', updatedAt:now, log:{[k]:{by, type:'done', text:note || '', at:now}}};
+  else data = {status:'todo', doneAt:null, doneDay:null, doneBy:null, doneNote:'', updatedAt:now, log:{[k]:{by, type:'reopened', text:note || '', at:now}}};
+  if (by !== 'owner' && isMine(t, by) && !(t.seenBy || {})[by]) data.seenBy = {[by]: now};
+  return write('tasks/' + t.id, 'update', data);
+}
+function closeInline(){ S.doneOpen = S.updOpen = S.reopenOpen = S.confirmDel = S.confirmM = S.confirmG = S.confirmPw = null; }
+
+document.addEventListener('click', async ev => {
+  const b = ev.target.closest('[data-act]'); if (!b || b.disabled) return;
+  const act = b.dataset.act, id = b.dataset.id, v = b.dataset.v;
+  const t = id ? (S.taskMap[id] || S.older[id]) : null;
+  switch (act) {
+    case 'tab':
+      if (v === 'account') { if (S.tab !== 'account') S.prevTab = S.tab; S.tab = 'account'; }
+      else S.tab = v || S.prevTab;
+      closeInline(); render(); window.scrollTo({top:0}); break;
+    case 'logout': S.loginMsg = ''; logout(); break;
+    case 'forgot-open': { const f = $('#forgot'); f.hidden = !f.hidden; if (!f.hidden) focusLater('#f-email'); break; }
+    case 'forgot-send': sendReset(); break;
+    case 'expand': if (S.expanded.has(id)) S.expanded.delete(id); else S.expanded.add(id); render(); break;
+    case 'start': if (t) { b.disabled = true; if (await setStatus(t, 'doing')) toast('बढ़िया, काम शुरू mark हो गया.'); render(); } break;
+    case 'done-open': closeInline(); S.doneOpen = id; render(); focusLater('#note-' + CSS.escape(id)); break;
+    case 'done-confirm': if (t) { const n = $('#note-' + CSS.escape(id)); b.disabled = true; const note = n ? n.value.trim() : ''; closeInline(); if (await setStatus(t, 'done', note)) toast(isMine(t, S.actor) ? 'शाबाश! Task पूरा mark हो गया, Task देने वाले को दिख रहा है.' : 'Task पूरा mark हो गया.', 'ok'); render(); } break;
+    case 'upd-open': closeInline(); S.updOpen = id; render(); focusLater('#upd-' + CSS.escape(id)); break;
+    case 'upd-save': if (t) { const n = $('#upd-' + CSS.escape(id)), txt = n ? n.value.trim() : ''; if (!txt) { toast('Update में कुछ लिखें.'); return; } const now = Date.now(); b.disabled = true; closeInline(); S.expanded.add(id); if (await write('tasks/' + id, 'update', {updatedAt:now, log:{[logKey(now)]:{by: isAdmin() ? 'owner' : S.actor, type:'note', text:txt, at:now}}})) toast('Update भेज दिया.', 'ok'); render(); } break;
+    case 'reopen-open': closeInline(); S.reopenOpen = id; render(); focusLater('#ro-' + CSS.escape(id)); break;
+    case 'reopen-confirm': if (t && canManage(t)) { const n = $('#ro-' + CSS.escape(id)); b.disabled = true; const note = n ? n.value.trim() : ''; closeInline(); if (await setStatus(t, 'todo', note)) { delete S.older[id]; toast('Task वापस खुल गया.'); } render(); } break;
+    case 'del': closeInline(); S.confirmDel = id; render(); break;
+    case 'del-confirm': if (t && canManage(t)) { b.disabled = true; closeInline(); if (await write('tasks/' + id, 'delete')) { delete S.older[id]; toast('Task हटा दिया.'); } render(); } break;
+    case 'inline-cancel': closeInline(); render(); break;
+    case 'edit': if (t && canManage(t)) fillComposer(t); break;
+    case 'c-cancel': resetComposer(); render(); break;
+    case 'kind': setKind(v); break;
+    case 'due': $('#c-due').value = v === '' ? '' : addDays(today(), Number(v)); break;
+    case 'after-close': S.lastCreated = null; renderAfter(); break;
+    case 'preview': if (isAdmin()) { S.preview = v; S.newInitFor = null; S.tab = null; closeInline(); render(); window.scrollTo({top:0}); } break;
+    case 'preview-exit': S.preview = null; S.newInitFor = null; S.tab = 'admin'; render(); break;
+    case 'filter-who': S.fWho = v; S.fStatus = 'open'; S.fQ = ''; $('#f-q').value = ''; S.tab = 'all'; render(); window.scrollTo({top:0}); break;
+    case 'go-late': S.fWho = 'all'; S.fStatus = 'late'; S.tab = 'all'; render(); window.scrollTo({top:0}); break;
+    case 'fs': S.fStatus = v; render(); break;
+    case 'older': loadOlder(); break;
+    case 'gen-pw': { const inp = $('#m-pw'); inp.value = genPw(); inp.focus(); break; }
+    case 'cred-copy': if (S.credCard) await copyText(credMsg(S.credCard)); break;
+    case 'cred-close': S.credCard = null; render(); break;
+    case 'm-edit': { const m = S.teamMap[v]; if (!m) break; const L = S.loginOf[v];
+      S.mEdit = v; showErr('#m-err', '');
+      $('#m-name').value = m.name || ''; $('#m-role').value = m.role || '';
+      $('#m-phone').value = S.phones[v] ? S.phones[v].replace(/^91(?=\d{10}$)/, '') : '';
+      $('#m-lid').value = L ? L.loginId : ''; $('#m-pw').value = '';
+      $('#m-pw').placeholder = L ? 'नया password (खाली छोड़ें तो पुराना ही रहेगा)' : 'Password बनाएँ (कम से कम 6 अक्षर)';
+      $('#m-perm-give').checked = !!m.canAssign; $('#m-perm-simple').checked = !m.canAssign;
+      $('#m-mode').textContent = (L ? 'Edit: ' : 'Login बनाएँ: ') + m.name; $('#m-submit').textContent = 'Save करें'; $('#m-cancel').hidden = false;
+      $('#m-form').scrollIntoView({behavior:'smooth', block:'start'}); $('#m-name').focus({preventScroll:true}); break; }
+    case 'm-cancel': resetMember(); break;
+    case 'm-pw': closeInline(); S.confirmPw = v; render(); break;
+    case 'm-pw-confirm': b.disabled = true; b.textContent = 'बन रहा है…'; await newPassword(v); break;
+    case 'm-del': closeInline(); S.confirmM = v; render(); break;
+    case 'm-del-confirm': b.disabled = true; await removeMember(v); break;
+    case 'g-edit': { const g = S.groupMap[v]; if (!g) break; S.gEdit = v; const ld = leadsOf(g);
+      S.gSel = new Map((g.memberIds || []).map(m => [m, ld.includes(m) ? 'full' : 'simple']));
+      $('#g-name').value = g.name || ''; $('#g-mode').textContent = 'Edit: ' + g.name; $('#g-submit').textContent = 'Save करें'; $('#g-cancel').hidden = false; showErr('#g-err', '');
+      renderGroupRows(); $('#g-form').scrollIntoView({behavior:'smooth', block:'start'}); break; }
+    case 'g-cancel': resetGroup(); break;
+    case 'g-del': closeInline(); S.confirmG = v; render(); break;
+    case 'g-del-confirm': b.disabled = true; closeInline(); if (await write('groups/' + v, 'update', {active:false})) { if (S.gEdit === v) resetGroup(); toast('ग्रुप हटा दिया.'); } render(); break;
+    case 'r-step': { const n = addDays(S.reportDay || today(), Number(v)); if (n <= today()) { S.reportDay = n; render(); } break; }
+    case 'r-today': S.reportDay = today(); render(); break;
+    case 'r-retry': delete S.rep[S.reportDay]; render(); break;
+    case 'r-copy': await copyText($('#r-text').value, $('#r-text')); break;
+    case 'r-csv-day': { const D = S.reportDay || today(), R = reportData(D); if (R.state !== 'ok') break; const ids = new Set(); const list = R.given.concat(R.done, R.pend || []).filter(x => !ids.has(x.id) && ids.add(x.id)); saveFile('Team-Report-' + D + '.csv', toCSV(list)); break; }
+    case 'r-csv-all': {
+      if (!isAdmin()) break;
+      b.disabled = true;
+      try { const all = (await B.db.getQuery('tasks', [])).map(x => Object.assign({id:x.id}, x.data)).sort((a,c) => (a.no || 0) - (c.no || 0)); saveFile('Team-Tasks-' + today() + '.csv', toCSV(all)); }
+      catch(e) { toast('Tasks नहीं खुल पाए. Internet देखें.', 'bad'); }
+      b.disabled = false; break; }
+  }
+});
+document.addEventListener('change', ev => {
+  const el = ev.target;
+  if (el.dataset && el.dataset.gm) { if (el.checked) S.gSel.set(el.dataset.gm, 'simple'); else S.gSel.delete(el.dataset.gm); renderGroupRows(); }
+  else if (el.dataset && el.dataset.gr) { if (S.gSel.has(el.dataset.gr)) S.gSel.set(el.dataset.gr, el.value); }
+  else if (el.id === 'f-who') { S.fWho = el.value; render(); }
+  else if (el.id === 'r-day') { if (el.value && el.value <= today()) { S.reportDay = el.value; render(); } }
+  else if (el.id === 'l-show') { $('#l-pw').type = el.checked ? 'text' : 'password'; }
+});
+document.addEventListener('input', ev => {
+  const el = ev.target;
+  if (el.id === 'f-q') { S.fQ = el.value; render(); }
+  else if (el.id === 's-org' || el.id === 's-owner') el._dirty = true;
+});
+$('#composer').addEventListener('submit', submitComposer);
+$('#m-form').addEventListener('submit', submitMember);
+$('#g-form').addEventListener('submit', submitGroup);
+$('#s-form').addEventListener('submit', submitSettings);
+$('#a-form').addEventListener('submit', submitSetup);
+$('#l-form').addEventListener('submit', submitLogin);
+$('#pw-form').addEventListener('submit', submitPw);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) render(); });
+window.addEventListener('online', () => { S.offline = false; render(); });
+window.addEventListener('offline', () => { S.offline = true; render(); });
+setInterval(() => { if (!document.hidden) { $('#home-stats')._h = null; render(); } }, 60000);
+
+/* ---------- boot ---------- */
+function boot(){
+  $('#c-due').value = today();
+  if (!B) {
+    $('#load-h').textContent = 'App नहीं खुल पाया';
+    $('#load-p').textContent = navigator.onLine ? 'Firebase load नहीं हुआ. Page दोबारा खोलें.' : 'Internet नहीं है. पहली बार app खोलने के लिए Internet चाहिए.';
+    return;
+  }
+  B.db.watchDoc('config/admin', s => {
+    const prev = S.adminUid;
+    S.adminUid = s.exists && s.data ? s.data.uid : null;
+    S.cfgReady.admin = true;
+    if (prev !== S.adminUid && S.authReady && !S.setupBusy) resolveActor(S.authUser); else render();
+  }, err => { console.warn(err); S.cfgReady.admin = true; render(); });
+  B.db.watchDoc('config/app', s => { S.settings = s.exists && s.data ? Object.assign({}, s.data) : {}; S.cfgReady.app = true; render(); },
+    err => { console.warn(err); S.cfgReady.app = true; render(); });
+  B.auth.onChange(u => {
+    const changed = !S.authReady || (u && u.uid) !== (S.authUser && S.authUser.uid);
+    S.authUser = u; S.authReady = true;
+    if (S.setupBusy) return;
+    if (changed) { if (!u) { stopSubs(); S.actor = null; resetViewState(); render(); } else resolveActor(u); }
+    else render();
+  });
+  render();
+}
+boot();
+if ('serviceWorker' in navigator && location.protocol === 'https:') { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); }); }
+})();
+</script>
+</body>
+</html>
