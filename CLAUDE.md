@@ -12,8 +12,9 @@ All UI text is Hindi (Devanagari) mixed with common English words (Task, Login, 
 | Repo | `github.com/deevadiamonds/TEAM-KAAM-` (git remote lowercases it: `deevadiamonds/team-kaam-`), branch `main`, public |
 | Live app (web) | https://deevadiamonds.github.io/TEAM-KAAM-/ — GitHub Pages, deployed by `.github/workflows/pages.yml` on push to `web/**` |
 | APK | https://github.com/deevadiamonds/TEAM-KAAM-/releases/latest/download/TeamKaam.apk — built by `.github/workflows/apk.yml` on push to `android/**`, release tag `apk-<run_number>` |
-| Backend | Firebase project `task-management-5b21b` (Spark/free plan): Authentication (Email/Password) + Cloud Firestore (Standard, asia-south1) |
-| Security rules | `firestore.rules` — **not auto-deployed**. Any change must be pasted by the owner: Firebase console → Firestore → Rules → replace all → Publish. Send him the file (as .txt) and say so. |
+| Backend | Firebase project `task-management-5b21b` (**Blaze** plan, ₹100 budget alert): Authentication (Email/Password) + Cloud Firestore (Standard, asia-south1) + Cloud Functions 2nd gen (asia-south1) + FCM |
+| Security rules, indexes, functions | **Auto-deployed** by `.github/workflows/firebase.yml` on push to `firestore.rules`, `firestore.indexes.json`, `functions/**`, `firebase.json` — uses secret `FIREBASE_SERVICE_ACCOUNT` (service account `github-deploy@task-management-5b21b.iam.gserviceaccount.com`, role Owner). No manual pasting any more. Errors surface as run annotations. |
+| Test notification | `.github/workflows/test-push.yml` — re-run it, dispatch it, or change `tools/push-target.txt` (first line: `owner`, a member's name, or `all`). Its annotations list which people have notifications registered. |
 
 Network from Claude's cloud sessions: GitHub (git + repo-scoped API, Actions runs/jobs/annotations, releases, re-run) works.
 Firebase/googleapis, github.io, npm/pypi, maven are usually blocked — so test against the fake backend (below), and read CI
@@ -38,9 +39,14 @@ GitHub Pages settings and Actions secrets cannot be changed from the session; th
   `APP_URL` (resValue set from the workflow) and exposes `window.TeamKaamApp`: `isApp()`, `isForeground()`, `notifyUser(title, body)`,
   `copy(text)`, `saveFile(name, text)` (→ Downloads), `retry()`. Links to other hosts (wa.me etc.) open outside. `assets/offline.html` on load failure.
   Because the APK just opens the live site, **web changes reach APK users without a new APK**. Only rebuild for shell changes.
-- APK signing: secrets `TK_KEYSTORE_B64` / `TK_KEYSTORE_PASS` are NOT set (session can't set secrets), so each APK build uses a
-  one-time key → a new APK won't install over an old one (users must uninstall first). If a stable key is ever needed, the owner adds
-  those two secrets in GitHub → Settings → Secrets and variables → Actions.
+- APK signing: secrets `TK_KEYSTORE_B64` / `TK_KEYSTORE_PASS` are set (stable key since release `apk-2`), so new APKs install over
+  old ones. The workflow refuses to publish if those secrets are missing. apk-1 (one-time key) users had to uninstall once.
+- APK push: `android/app/google-services.json` (Firebase Android app `com.teamkaam.app`; the file also lists a stray `com.teamkaam.apk`
+  entry — harmless), firebase-messaging via BoM 33.5.1, AndroidX on. Manifest meta-data sets channel `tasks` + `ic_stat` icon.
+  Bridge `TeamKaamApp.requestPushToken()` → page callback `window.__tkPushToken(token)`.
+- `functions/index.js` — notification server (Node 22, firebase-functions v6, 2nd gen, asia-south1): `taskCreated` (→ receivers),
+  `taskUpdated` (done → giver; reopened → receivers; reassigned → new receivers; new "note" log → everyone involved except writer).
+  Sends via `sendEachForMulticast` to `pushTokens` of those people and deletes dead tokens.
 - `tools/fake-backend.js` + `tools/test_flow.py` — in-memory fake of `TK_BACKEND` and a Playwright end-to-end test. Run `python3 tools/test_flow.py` (expects `PASS`).
 - `firestore.rules` — see Permissions.
 
@@ -56,6 +62,7 @@ GitHub Pages settings and Actions secrets cannot be changed from the session; th
 | `groups/{groupId}` | `name`, `memberIds[]`, `leads[]` (Full control), `active`, `createdAt` | members read; admin writes |
 | `logins/{loginId}` | `email`, `uid`, `memberId` | public get (login lookup); admin list/write |
 | `private/contacts` | `phones{memberId: '91…'}` | admin only |
+| `pushTokens/{fcmToken}` | `who` (memberId or 'owner'), `uid`, `platform` ('web'/'android'), `at` | the signed-in person may write their own; nobody reads (functions use admin SDK) |
 | `tasks/{taskId}` | `no`, `title`, `details`, `kind` ('person'/'group'), `memberId`, `groupId`, `viaGroup`, `due` (YYYY-MM-DD), `priority` ('normal'/'urgent'), `status` ('todo'/'doing'/'done'), `createdAt`, `createdDay`, `createdBy` (memberId or 'owner'), `doneAt`, `doneDay`, `doneBy`, `doneNote`, `seenBy{memberId: ms}`, `log{key: {by, type, text, at}}`, `updatedAt`, **`watchers[]`** (creator if a member + person assignee or all group members), **`openFor[]`** (= watchers while not done, `[]` when done) | see rules |
 
 Logins: Admin signs in with his real Gmail (password reset by email works). Members get a short Login ID (`[a-z0-9._@-]{3,60}`);
@@ -95,7 +102,10 @@ Avoid queries needing composite indexes (sort client-side instead).
 In-app toast + chime + vibrate when the app is open. When the app is in the background but still alive: APK → `TeamKaamApp.notifyUser`
 (native notification); browser → `systemNotify()` via the service worker (`showNotification`) after the user taps "Notification चालू करें"
 (banner; "बाद में" stored in localStorage `tk.notif.later`). Events: new task to me, task reopened for me, task I gave (or any, for Admin) marked done.
-True push when the app is fully closed needs FCM + Cloud Functions → Blaze plan (proposed to the owner, not set up yet).
+**Closed-app push (live since 19 Oct 2026):** Cloud Functions → FCM. Web/iPhone: `firebase-messaging-compat` in the page + `sw.js`
+(importScripts, same config), token via `TK_CONFIG.vapidKey`; iPhone needs the app added to the Home Screen (iOS 16.4+) — a banner
+explains this in Safari. APK: native FCM. `setupPush()` runs after login and after "Notification चालू करें"; `logout()` deletes the
+device token. When `S.pushOn`, `alertUser()` skips local background notifications (the server sends them) to avoid doubles.
 WhatsApp buttons (`wa.me`) are the fallback ping; phone numbers are admin-only.
 
 ## How to make a change (the routine)
@@ -106,6 +116,6 @@ WhatsApp buttons (`wa.me`) are the fallback ping; phone numbers are admin-only.
 4. Run `python3 tools/test_flow.py` — extend it (and `tools/fake-backend.js`) for the new behaviour. It must print `PASS`.
 5. Commit with the session's attribution lines and push to `main`. Watch the run:
    `gh api repos/deevadiamonds/TEAM-KAAM-/actions/runs --jq '.workflow_runs[0] | "\(.name) \(.status) \(.conclusion)"'`.
-6. Tell the owner in Hindi: what changed, that the app updates by itself (pull down / reopen), and — only if `firestore.rules`
-   changed — send the rules file and ask him to paste + Publish **before** using the new feature. If the APK changed, give the APK link.
+6. Tell the owner in Hindi: what changed and that the app updates by itself (close and reopen). Rules/functions deploy themselves —
+   check the "Firebase (notifications + rules)" run succeeded. If the APK changed, give the APK link.
 7. Update this file when the structure, data model or permissions change.

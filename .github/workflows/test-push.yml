@@ -1,0 +1,30 @@
+name: Test notification
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "owner (Admin), a member's name, or all"
+        default: owner
+  push:
+    branches: [main]
+    paths: ['tools/push-target.txt']
+
+jobs:
+  send:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Send
+        env:
+          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          INPUT_TARGET: ${{ github.event.inputs.target }}
+        run: |
+          printf '%s' "$SA" > "$RUNNER_TEMP/sa.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/sa.json"
+          export TARGET="${INPUT_TARGET:-$(head -n1 tools/push-target.txt 2>/dev/null || echo owner)}"
+          cd tools && npm install --no-save --no-audit --no-fund firebase-admin@13 >/dev/null 2>&1
+          node send-test-push.js
