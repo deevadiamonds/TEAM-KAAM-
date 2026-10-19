@@ -1,0 +1,91 @@
+name: Firebase (notifications + rules)
+
+on:
+  push:
+    branches: [main]
+    paths: ['functions/**', 'firestore.rules', 'firestore.indexes.json', 'firebase.json', '.github/workflows/firebase.yml']
+  workflow_dispatch:
+
+concurrency:
+  group: firebase-deploy
+  cancel-in-progress: false
+
+env:
+  PROJECT: task-management-5b21b
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Credentials
+        id: cred
+        env:
+          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$SA" ]; then
+            echo "::warning::FIREBASE_SERVICE_ACCOUNT secret is not set yet — nothing deployed."
+            echo "ok=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          printf '%s' "$SA" > "$RUNNER_TEMP/sa.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/sa.json" >> "$GITHUB_ENV"
+          echo "ok=true" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@v4
+        if: steps.cred.outputs.ok == 'true'
+        with:
+          node-version: '22'
+
+      - name: Report helper
+        if: steps.cred.outputs.ok == 'true'
+        run: |
+          cat > "$RUNNER_TEMP/report.sh" <<'SH'
+          # usage: report.sh <title> <logfile>  — turns the last lines of a log into an annotation (raw logs are not always readable)
+          msg=$(tail -n 45 "$2" | sed -e 's/\x1b\[[0-9;]*m//g' -e 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
+          echo "::error title=$1::$msg"
+          SH
+          chmod +x "$RUNNER_TEMP/report.sh"
+
+      - name: Google Cloud APIs and build permissions
+        if: steps.cred.outputs.ok == 'true'
+        run: |
+          set -o pipefail
+          {
+            gcloud auth activate-service-account --key-file="$RUNNER_TEMP/sa.json"
+            gcloud config set project "$PROJECT"
+            gcloud services enable cloudfunctions.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com \
+              run.googleapis.com eventarc.googleapis.com pubsub.googleapis.com compute.googleapis.com \
+              firebaserules.googleapis.com fcm.googleapis.com
+            PN=$(gcloud projects describe "$PROJECT" --format='value(projectNumber)')
+            for r in roles/cloudbuild.builds.builder roles/artifactregistry.writer roles/logging.logWriter roles/storage.objectViewer roles/eventarc.eventReceiver roles/run.invoker roles/datastore.user roles/firebasecloudmessaging.admin; do
+              gcloud projects add-iam-policy-binding "$PROJECT" --member="serviceAccount:$PN-compute@developer.gserviceaccount.com" --role="$r" --condition=None --quiet >/dev/null || echo "could not add $r"
+            done
+            gcloud projects add-iam-policy-binding "$PROJECT" --member="serviceAccount:service-$PN@gcp-sa-pubsub.iam.gserviceaccount.com" --role=roles/iam.serviceAccountTokenCreator --condition=None --quiet >/dev/null || true
+          } 2>&1 | tee "$RUNNER_TEMP/gcp.log" || { "$RUNNER_TEMP/report.sh" "Google Cloud setup failed" "$RUNNER_TEMP/gcp.log"; exit 1; }
+
+      - name: Deploy security rules and indexes
+        if: steps.cred.outputs.ok == 'true'
+        run: |
+          set -o pipefail
+          npx --yes firebase-tools@14 deploy --only firestore:rules,firestore:indexes --project "$PROJECT" --non-interactive --force 2>&1 | tee "$RUNNER_TEMP/rules.log" \
+            || { "$RUNNER_TEMP/report.sh" "Rules deploy failed" "$RUNNER_TEMP/rules.log"; exit 1; }
+
+      - name: Install function packages
+        if: steps.cred.outputs.ok == 'true'
+        working-directory: functions
+        run: npm install --no-audit --no-fund
+
+      - name: Deploy notification functions
+        if: steps.cred.outputs.ok == 'true'
+        run: |
+          set -o pipefail
+          for i in 1 2 3; do
+            if npx --yes firebase-tools@14 deploy --only functions --project "$PROJECT" --non-interactive --force 2>&1 | tee "$RUNNER_TEMP/fn.log"; then
+              echo "::notice::Notification functions deployed (attempt $i)"; exit 0
+            fi
+            echo "::warning::functions deploy attempt $i failed — retrying in 90s (first deploys often wait for Google permissions)"
+            sleep 90
+          done
+          "$RUNNER_TEMP/report.sh" "Functions deploy failed" "$RUNNER_TEMP/fn.log"
+          exit 1

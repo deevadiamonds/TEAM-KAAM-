@@ -1,6 +1,20 @@
 /* Team Kaam service worker: keeps the app shell and Firebase SDK available offline.
    Firestore traffic is never touched — the Firebase SDK handles its own offline cache. */
-const VERSION = 'tk-v2';
+const VERSION = 'tk-v3';
+
+/* Firebase Cloud Messaging: shows notifications sent by the Team Kaam notification server while the app is closed. */
+try {
+  importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js', 'https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
+  firebase.initializeApp({
+    apiKey: 'AIzaSyDb6GJql9H0dot4S-d-qj307DIqCdXF9HA',
+    authDomain: 'task-management-5b21b.firebaseapp.com',
+    projectId: 'task-management-5b21b',
+    storageBucket: 'task-management-5b21b.firebasestorage.app',
+    messagingSenderId: '767497921708',
+    appId: '1:767497921708:web:f11013fc847cf0ee87ab09'
+  });
+  firebase.messaging();
+} catch (e) { /* offline or unsupported: app still works, just no closed-app notifications */ }
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -10,6 +24,7 @@ self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== VERSION).map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
 self.addEventListener('notificationclick', e => {
+  if (e.notification.data && e.notification.data.FCM_MSG) return; /* Firebase handles its own clicks */
   e.notification.close();
   e.waitUntil(self.clients.matchAll({type: 'window', includeUncontrolled: true}).then(list => {
     for (const c of list) { if ('focus' in c) return c.focus(); }

@@ -537,6 +537,7 @@ td.z{color:var(--ink-3)} td.l{color:var(--late);font-weight:600} td.o{color:var(
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 <!--/FIREBASE-SDK-->
 <script>
 window.TK_CONFIG = {
@@ -545,7 +546,9 @@ window.TK_CONFIG = {
   projectId: "task-management-5b21b",
   storageBucket: "task-management-5b21b.firebasestorage.app",
   messagingSenderId: "767497921708",
-  appId: "1:767497921708:web:f11013fc847cf0ee87ab09"
+  appId: "1:767497921708:web:f11013fc847cf0ee87ab09",
+  /* Web Push certificate (Firebase → Project settings → Cloud Messaging). Empty = browser push off. */
+  vapidKey: ""
 };
 
 /* Firebase adapter: the app talks only to window.TK_BACKEND */
@@ -599,6 +602,10 @@ window.TK_CONFIG = {
         await u.updatePassword(nw);
       },
       sendReset: email => auth.sendPasswordResetEmail(email)
+    },
+    push: {
+      supported: async () => { try { return !!(firebase.messaging && await Promise.resolve(firebase.messaging.isSupported())); } catch (e) { return false; } },
+      token: (vapidKey, registration) => firebase.messaging().getToken({vapidKey, serviceWorkerRegistration: registration})
     },
     db: {
       newId: col => fs.collection(col).doc().id,
@@ -881,6 +888,7 @@ function alertUser(title, body, kind){
   let bg = document.hidden;
   try { if (NATIVE && NATIVE.isForeground && !NATIVE.isForeground()) bg = true; } catch(e){}
   if (!bg) return;
+  if (S.pushOn) return; /* the notification server already sends this to the phone */
   if (NATIVE && NATIVE.notifyUser) { try { NATIVE.notifyUser(title, body); } catch(e){} }
   else systemNotify(title, body);
 }
@@ -1074,7 +1082,26 @@ function resetViewState(){
   $('#c-title').value = ''; $('#c-details').value = ''; $('#c-urgent').checked = false; $('#c-who')._h = null;
   closeInline();
 }
+async function setupPush(){
+  if (S.preview || !S.actor) return;
+  try {
+    if (NATIVE && NATIVE.requestPushToken) { window.__tkPushToken = tok => savePushToken(tok, 'android'); NATIVE.requestPushToken(); return; }
+    const key = (window.TK_CONFIG || {}).vapidKey;
+    if (!B.push || !key || !('Notification' in window) || Notification.permission !== 'granted' || !navigator.serviceWorker) return;
+    if (!(await B.push.supported())) return;
+    const reg = await navigator.serviceWorker.ready;
+    const tok = await B.push.token(key, reg);
+    if (tok) savePushToken(tok, 'web');
+  } catch (e) { console.warn('push setup', e); }
+}
+async function savePushToken(tok, platform){
+  if (!tok || !S.actor || !S.myUid) return;
+  S.pushToken = tok;
+  try { await B.db.set('pushTokens/' + tok, {who: S.actor, uid: S.myUid, platform, at: Date.now()}); S.pushOn = true; }
+  catch (e) { console.warn('push token save', e); S.pushOn = false; }
+}
 async function logout(){
+  if (S.pushToken) { const t = S.pushToken; S.pushToken = null; S.pushOn = false; try { await Promise.race([B.db.del('pushTokens/' + t), sleep(1500)]); } catch(e){} }
   stopSubs(); resetViewState(); S.actor = null;
   try { await B.auth.signOut(); } catch(e){}
   render(); window.scrollTo({top:0});
@@ -1185,6 +1212,7 @@ function startSubs(){
     S.doneErr = null; S.live.done = true; render();
   }, taskListenErr('done'), admin ? undefined : {orderBy:['doneAt','desc']});
   D('config/counter', s => { S.counter = s.exists ? (s.data.n || 0) : 0; }, () => {});
+  setTimeout(setupPush, 1500);
   if (S.actor === 'owner') {
     W('logins', [], list => {
       S.logins = Object.fromEntries(list.map(x => [x.id, x.data]));
@@ -1827,7 +1855,7 @@ document.addEventListener('click', async ev => {
       else S.tab = v || S.prevTab;
       closeInline(); render(); window.scrollTo({top:0}); break;
     case 'logout': S.loginMsg = ''; logout(); break;
-    case 'notif-on': try { Notification.requestPermission().then(p => { toast(p === 'granted' ? 'Notification चालू हो गए.' : 'Notification बंद रहेंगे. Browser की settings से चालू कर सकते हैं.', p === 'granted' ? 'ok' : ''); render(); }); } catch(e){} break;
+    case 'notif-on': try { Notification.requestPermission().then(p => { toast(p === 'granted' ? 'Notification चालू हो गए.' : 'Notification बंद रहेंगे. Browser की settings से चालू कर सकते हैं.', p === 'granted' ? 'ok' : ''); if (p === 'granted') setupPush(); render(); }); } catch(e){} break;
     case 'notif-later': try { localStorage.setItem('tk.notif.later', '1'); } catch(e){} render(); break;
     case 'forgot-open': { const f = $('#forgot'); f.hidden = !f.hidden; if (!f.hidden) focusLater('#f-email'); break; }
     case 'forgot-send': sendReset(); break;

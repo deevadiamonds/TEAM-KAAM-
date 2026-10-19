@@ -116,6 +116,15 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
+    // ---- phone / browser notification addresses (read only by the notification server) ----
+    match /pushTokens/{token} {
+      allow create, update: if request.resource.data.uid == request.auth.uid
+        && ((isAdmin() && request.resource.data.who == 'owner')
+            || (isMember() && request.resource.data.who == myMid()));
+      allow delete: if signedIn() && (isAdmin() || resource.data.uid == request.auth.uid);
+      allow read: if false;
+    }
+
     // ---- tasks ----
     match /tasks/{taskId} {
       allow read: if isAdmin() || (isMember() && canSee(resource.data));
