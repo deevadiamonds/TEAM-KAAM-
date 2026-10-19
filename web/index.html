@@ -9,6 +9,8 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Team Kaam">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anek+Devanagari:wdth,wght@75..125,400..800&family=Kalam:wght@400&family=Mukta:wght@400;500;600;700&display=swap">
@@ -892,6 +894,8 @@ function alertUser(title, body, kind){
   if (NATIVE && NATIVE.notifyUser) { try { NATIVE.notifyUser(title, body); } catch(e){} }
   else systemNotify(title, body);
 }
+const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isStandalone = () => !!(navigator.standalone || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches));
 function notifDismissed(){ try { return localStorage.getItem('tk.notif.later') === '1'; } catch(e){ return false; } }
 function toast(msg, kind){
   const el = document.createElement('div');
@@ -968,6 +972,7 @@ function renderBanner(){
   let h = '', bad = false;
   if (S.preview && S.actor) h = '<span>आप <b>' + esc(nameOf(S.preview)) + '</b> की नज़र से देख रहे हैं. यहाँ से कुछ बदलेगा नहीं.</span><button class="btn sm" type="button" data-act="preview-exit">Admin view पर लौटें</button>';
   else if (S.offline && S.actor) { h = '<span>Internet नहीं है. आप काम करते रहें — बदलाव phone में save रहेंगे और Internet आते ही sync होंगे.</span>'; bad = true; }
+  else if (S.actor && !NATIVE && isIOS() && !isStandalone() && !notifDismissed()) h = '<span>iPhone पर notification पाने के लिए: Safari में नीचे <b>Share</b> बटन → <b>Add to Home Screen</b> दबाएँ, फिर Home Screen वाले Team Kaam icon से app खोलें.</span><button class="linkb" type="button" data-act="notif-later">बाद में</button>';
   else if (S.actor && canNotify() && Notification.permission === 'default' && !notifDismissed()) h = '<span>नया Task या पूरा हुआ काम आते ही phone/computer पर सूचना पाने के लिए Notification चालू करें.</span><button class="btn sm primary" type="button" data-act="notif-on">चालू करें</button><button class="linkb" type="button" data-act="notif-later">बाद में</button>';
   b.hidden = !h; b.classList.toggle('bad', bad); patch(bi, h);
 }
