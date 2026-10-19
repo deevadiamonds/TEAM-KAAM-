@@ -58,7 +58,7 @@ jobs:
           echo "::notice title=Roles of the service account::$ROLES"
           if ! gcloud services enable cloudfunctions.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com \
                run.googleapis.com eventarc.googleapis.com pubsub.googleapis.com compute.googleapis.com \
-               firebaserules.googleapis.com fcm.googleapis.com firestore.googleapis.com > "$RUNNER_TEMP/gcp.log" 2>&1; then
+               firebaserules.googleapis.com fcm.googleapis.com firestore.googleapis.com cloudbilling.googleapis.com > "$RUNNER_TEMP/gcp.log" 2>&1; then
             "$RUNNER_TEMP/report.sh" "Could not turn on Google APIs — the service account needs the Owner role (and the project needs the Blaze plan)" "$RUNNER_TEMP/gcp.log"
             exit 1
           fi
