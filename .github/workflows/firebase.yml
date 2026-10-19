@@ -50,19 +50,24 @@ jobs:
       - name: Google Cloud APIs and build permissions
         if: steps.cred.outputs.ok == 'true'
         run: |
-          set -o pipefail
-          {
-            gcloud auth activate-service-account --key-file="$RUNNER_TEMP/sa.json"
-            gcloud config set project "$PROJECT"
-            gcloud services enable cloudfunctions.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com \
-              run.googleapis.com eventarc.googleapis.com pubsub.googleapis.com compute.googleapis.com \
-              firebaserules.googleapis.com fcm.googleapis.com
-            PN=$(gcloud projects describe "$PROJECT" --format='value(projectNumber)')
-            for r in roles/cloudbuild.builds.builder roles/artifactregistry.writer roles/logging.logWriter roles/storage.objectViewer roles/eventarc.eventReceiver roles/run.invoker roles/datastore.user roles/firebasecloudmessaging.admin; do
-              gcloud projects add-iam-policy-binding "$PROJECT" --member="serviceAccount:$PN-compute@developer.gserviceaccount.com" --role="$r" --condition=None --quiet >/dev/null || echo "could not add $r"
-            done
-            gcloud projects add-iam-policy-binding "$PROJECT" --member="serviceAccount:service-$PN@gcp-sa-pubsub.iam.gserviceaccount.com" --role=roles/iam.serviceAccountTokenCreator --condition=None --quiet >/dev/null || true
-          } 2>&1 | tee "$RUNNER_TEMP/gcp.log" || { "$RUNNER_TEMP/report.sh" "Google Cloud setup failed" "$RUNNER_TEMP/gcp.log"; exit 1; }
+          EMAIL=$(python3 -c "import json,os;print(json.load(open(os.environ['GOOGLE_APPLICATION_CREDENTIALS']))['client_email'])")
+          echo "::notice title=Service account::$EMAIL"
+          gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" >/dev/null 2>&1
+          gcloud config set project "$PROJECT" >/dev/null 2>&1
+          ROLES=$(gcloud projects get-iam-policy "$PROJECT" --flatten="bindings[].members" --filter="bindings.members:serviceAccount:$EMAIL" --format="value(bindings.role)" 2>&1 | tr '\n' ' ')
+          echo "::notice title=Roles of the service account::$ROLES"
+          if ! gcloud services enable cloudfunctions.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com \
+               run.googleapis.com eventarc.googleapis.com pubsub.googleapis.com compute.googleapis.com \
+               firebaserules.googleapis.com fcm.googleapis.com firestore.googleapis.com > "$RUNNER_TEMP/gcp.log" 2>&1; then
+            "$RUNNER_TEMP/report.sh" "Could not turn on Google APIs — the service account needs the Owner role (and the project needs the Blaze plan)" "$RUNNER_TEMP/gcp.log"
+            exit 1
+          fi
+          PN=$(gcloud projects describe "$PROJECT" --format='value(projectNumber)')
+          for r in roles/cloudbuild.builds.builder roles/artifactregistry.writer roles/logging.logWriter roles/storage.objectViewer roles/eventarc.eventReceiver roles/run.invoker roles/datastore.user roles/firebasecloudmessaging.admin; do
+            gcloud projects add-iam-policy-binding "$PROJECT" --member="serviceAccount:$PN-compute@developer.gserviceaccount.com" --role="$r" --condition=None --quiet >/dev/null 2>>"$RUNNER_TEMP/iam.log" || echo "could not add $r" >> "$RUNNER_TEMP/iam.log"
+          done
+          gcloud projects add-iam-policy-binding "$PROJECT" --member="serviceAccount:service-$PN@gcp-sa-pubsub.iam.gserviceaccount.com" --role=roles/iam.serviceAccountTokenCreator --condition=None --quiet >/dev/null 2>>"$RUNNER_TEMP/iam.log" || true
+          if [ -s "$RUNNER_TEMP/iam.log" ]; then echo "::warning title=IAM::$(head -c 1500 "$RUNNER_TEMP/iam.log" | tr '\n' ' ')"; fi
 
       - name: Deploy security rules and indexes
         if: steps.cred.outputs.ok == 'true'
