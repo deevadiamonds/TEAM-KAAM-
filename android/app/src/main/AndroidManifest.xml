@@ -14,6 +14,11 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="false">
 
+        <!-- Notifications sent by the Team Kaam notification server (Firebase Cloud Messaging) -->
+        <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@drawable/ic_stat" />
+        <meta-data android:name="com.google.firebase.messaging.default_notification_color" android:resource="@color/tk_blue" />
+        <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" android:value="tasks" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

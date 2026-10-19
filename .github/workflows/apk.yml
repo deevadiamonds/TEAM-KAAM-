@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   apk:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
@@ -33,7 +33,9 @@ jobs:
           echo "APP_URL=https://$OWNER.github.io/$REPO/" >> "$GITHUB_ENV"
           if [ -n "$KS_B64" ]; then
             echo "$KS_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+            echo "HAS_KS=true" >> "$GITHUB_ENV"
           else
+            echo "HAS_KS=false" >> "$GITHUB_ENV"
             echo "::warning::TK_KEYSTORE_B64 secret not set — using a one-time key. Later APKs won't install over this one."
             keytool -genkeypair -keystore "$RUNNER_TEMP/release.jks" -alias teamkaam -keyalg RSA -keysize 2048 -validity 10000 \
               -storepass teamkaam -keypass teamkaam -dname "CN=Team Kaam"
@@ -45,9 +47,18 @@ jobs:
         env:
           TK_KS_PASS: ${{ secrets.TK_KEYSTORE_PASS || 'teamkaam' }}
           VERSION_CODE: ${{ github.run_number }}
-        run: gradle assembleRelease --no-daemon --stacktrace
+        run: |
+          set -o pipefail
+          gradle assembleRelease --no-daemon --stacktrace 2>&1 | tee "$RUNNER_TEMP/gradle.log" || {
+            msg=$( (grep -E "error:|What went wrong|Could not|> |e: " "$RUNNER_TEMP/gradle.log" | head -40; tail -n 15 "$RUNNER_TEMP/gradle.log") | sed -e 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
+            echo "::error title=APK build failed::$msg"; exit 1; }
+
+      - name: Signing key missing
+        if: env.HAS_KS != 'true'
+        run: echo "::warning::APK built but NOT published — add TK_KEYSTORE_B64 and TK_KEYSTORE_PASS secrets, then re-run this workflow."
 
       - name: Publish APK
+        if: env.HAS_KS == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

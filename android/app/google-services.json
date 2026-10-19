@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "767497921708",
+    "project_id": "task-management-5b21b",
+    "storage_bucket": "task-management-5b21b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:767497921708:android:ae48d57585524f1487ab09",
+        "android_client_info": {
+          "package_name": "com.teamkaam.apk"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA961AxLH2Mv07IYIiC6iylPBkdZoxHaSA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:767497921708:android:2cc17ce1b64c082487ab09",
+        "android_client_info": {
+          "package_name": "com.teamkaam.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA961AxLH2Mv07IYIiC6iylPBkdZoxHaSA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

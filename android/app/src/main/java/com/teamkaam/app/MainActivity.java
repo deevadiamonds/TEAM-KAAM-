@@ -28,6 +28,10 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
+import com.google.firebase.messaging.FirebaseMessaging;
+
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
@@ -248,6 +252,19 @@ public class MainActivity extends Activity {
         public String saveFile(String name, String text) {
             String safe = name.replaceAll("[^A-Za-z0-9._-]", "_");
             return saveDownload(safe, text);
+        }
+
+        /** Asks Firebase for this phone's notification address and hands it to the page (window.__tkPushToken). */
+        @JavascriptInterface
+        public void requestPushToken() {
+            try {
+                FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+                    if (!task.isSuccessful() || task.getResult() == null) return;
+                    final String js = "window.__tkPushToken && window.__tkPushToken(" + JSONObject.quote(task.getResult()) + ")";
+                    runOnUiThread(() -> web.evaluateJavascript(js, null));
+                });
+            } catch (Exception ignored) {
+            }
         }
 
         @JavascriptInterface
