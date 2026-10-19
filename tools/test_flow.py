@@ -101,6 +101,52 @@ async def main():
         await pg.wait_for_selector('#v-mine:not([hidden])', timeout=5000)
         print('ok  password reset: old rejected, new works')
 
+        # ---- visibility: only the giver, the receiver(s) and Admin see a task ----
+        async def logout():
+            await pg.click('[data-act="logout"]'); await pg.wait_for_selector('#v-login:not([hidden])')
+        async def login(lid, pw, view):
+            await pg.fill('#l-id', lid); await pg.fill('#l-pw', pw); await pg.click('#l-submit')
+            await pg.wait_for_selector(f'#v-{view}:not([hidden])', timeout=5000)
+        async def all_titles():
+            await pg.click('.tab[data-v="all"]'); await pg.click('[data-act="fs"][data-v="all"]'); await pg.wait_for_timeout(250)
+            return await pg.inner_text('#all-list')
+        def mid(name):
+            return [k.split('/')[1] for k, v in store().items() if k.startswith('team/') and v['name'] == name][0]
+        store = lambda: pg_store
+        await logout(); await login('admin@gmail.com', 'admin123', 'home')
+        await pg.click('.tab[data-v="admin"]')
+        for nm, lid, give in [('Nishant', 'nishant', True), ('Darshana', 'darshana', True), ('Akash', 'akash', True), ('Payal', 'payal', False)]:
+            await add(nm, lid, lid + '123', give=give)
+        pg_store = await pg.evaluate('window.__fake.store')
+        async def give(title, who):
+            await pg.click('.tab[data-v="home"]'); await pg.wait_for_timeout(150)
+            await pg.click('[data-act="kind"][data-v="person"]')
+            await pg.fill('#c-title', title); await pg.select_option('#c-who', who); await pg.click('#c-submit'); await pg.wait_for_timeout(250)
+        await give('A-to-Payal', mid('Payal'))
+        await logout(); await login('nishant', 'nishant123', 'mine')
+        assert 'Report' not in await pg.inner_text('#tabs')
+        await give('N-to-Darshana', mid('Darshana')); await give('N-to-Payal', mid('Payal'))
+        t = await all_titles(); assert 'N-to-Darshana' in t and 'N-to-Payal' in t and 'A-to-Payal' not in t, t
+        await logout(); await login('darshana', 'darshana123', 'mine')
+        t = await all_titles(); assert 'N-to-Darshana' in t and 'N-to-Payal' not in t and 'A-to-Payal' not in t, t
+        await logout(); await login('akash', 'akash123', 'mine')
+        t = await all_titles(); assert 'N-to-' not in t and 'A-to-' not in t, t
+        await logout(); await login('payal', 'payal123', 'mine')
+        t = await pg.inner_text('#mine-body'); assert 'A-to-Payal' in t and 'N-to-Payal' in t and 'N-to-Darshana' not in t, t
+        await pg.click('#v-mine [data-act="done-open"]'); await pg.click('#v-mine [data-act="done-confirm"]'); await pg.wait_for_timeout(300)
+        done_doc = [v for k, v in (await pg.evaluate('window.__fake.store')).items() if k.startswith('tasks/') and v.get('status') == 'done' and v['title'].endswith('Payal')][0]
+        assert done_doc['openFor'] == [] and done_doc['watchers'], done_doc
+        await logout(); await login('admin@gmail.com', 'admin123', 'home')
+        t = await all_titles(); assert all(x in t for x in ['A-to-Payal', 'N-to-Darshana', 'N-to-Payal']), t
+        print('ok  visibility: giver + receiver + Admin only')
+        st = await pg.evaluate('window.__fake.store')
+        assert st['config/app'].get('visV2') is True, 'migration flag not set'
+        assert all(isinstance(v.get('watchers'), list) and isinstance(v.get('openFor'), list) for k, v in st.items() if k.startswith('tasks/')), 'task without watchers'
+        print('ok  every task has watchers/openFor')
+        await pg.click('.tab[data-v="home"]'); await pg.wait_for_timeout(200)
+        await pg.screenshot(path=str(TMP / 'admin-home.png'))
+        print('screenshot', TMP / 'admin-home.png')
+
         sw = await pg.evaluate('document.documentElement.scrollWidth')
         assert sw <= 400, f'horizontal scroll {sw}'
         await b.close()

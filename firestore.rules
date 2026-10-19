@@ -57,6 +57,11 @@ service cloud.firestore {
       return (t.kind == 'person' && t.memberId == myMid())
         || (t.kind == 'group' && myMid() in groupDoc(t.groupId).get('memberIds', []));
     }
+    // A member sees a task only if they gave it or it was given to them (group tasks: every group member).
+    // The app keeps two lists on each task: watchers (everyone involved) and openFor (same list while the task is open).
+    function canSee(t) {
+      return myMid() in t.watchers || myMid() in t.openFor;
+    }
     function sameTarget() {
       let a = request.resource.data;
       let b = resource.data;
@@ -67,8 +72,9 @@ service cloud.firestore {
     // What a person doing the task may change: progress, completion, notes, "seen"
     function progressOnly() {
       return request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['status', 'doneAt', 'doneDay', 'doneBy', 'doneNote', 'updatedAt', 'log', 'seenBy'])
-        && !(resource.data.status == 'done' && request.resource.data.status != 'done');
+          .hasOnly(['status', 'doneAt', 'doneDay', 'doneBy', 'doneNote', 'updatedAt', 'log', 'seenBy', 'openFor'])
+        && !(resource.data.status == 'done' && request.resource.data.status != 'done')
+        && (request.resource.data.get('openFor', []) == [] || request.resource.data.get('openFor', []) == resource.data.get('openFor', []));
     }
 
     // ---- setup & app settings ----
@@ -112,11 +118,12 @@ service cloud.firestore {
 
     // ---- tasks ----
     match /tasks/{taskId} {
-      allow read: if isAdmin() || isMember();
+      allow read: if isAdmin() || (isMember() && canSee(resource.data));
       allow create: if (isAdmin() && request.resource.data.createdBy == 'owner')
         || (isMember()
             && request.resource.data.createdBy == myMid()
             && request.resource.data.status == 'todo'
+            && myMid() in request.resource.data.watchers
             && targetOk(request.resource.data));
       allow update: if isAdmin()
         || (isMember() && (

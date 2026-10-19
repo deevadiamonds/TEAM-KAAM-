@@ -742,6 +742,25 @@ function canActOn(t){
   if (isAdmin()) return true;
   return isMine(t, S.actor) || canManage(t);
 }
+/* Who may see a task: its creator, the people it is given to (all group members for a group task) and the Admin. */
+function watchersFor(t, groupMembers){
+  const w = new Set();
+  if (t.createdBy && t.createdBy !== 'owner') w.add(t.createdBy);
+  if (t.kind === 'group') { const g = S.groupMap[t.groupId]; (groupMembers || (g && g.memberIds) || []).forEach(id => w.add(id)); }
+  else if (t.memberId) w.add(t.memberId);
+  return [...w].sort();
+}
+const sameList = (a, b) => Array.isArray(a) && Array.isArray(b) && a.length === b.length && [...a].sort().every((x, i) => x === [...b].sort()[i]);
+function canSeeTask(t, mid){
+  if (Array.isArray(t.watchers)) return t.watchers.includes(mid) || (Array.isArray(t.openFor) && t.openFor.includes(mid));
+  return isMine(t, mid) || (t.createdBy || 'owner') === mid;
+}
+function vis(list){
+  list = list || S.tasks;
+  if (isAdmin()) return list;
+  const a = actorId();
+  return a && a !== 'owner' ? list.filter(t => canSeeTask(t, a)) : list;
+}
 const isOpen = t => t.status !== 'done';
 const isLate = t => isOpen(t) && !!t.due && t.due < today();
 function openSort(a,b){
@@ -847,13 +866,25 @@ function chime(){
     });
   } catch(e){}
 }
+const canNotify = () => !NATIVE && 'Notification' in window;
+function systemNotify(title, body){
+  if (!canNotify() || Notification.permission !== 'granted') return;
+  const opts = {body, icon:'icons/icon-192.png', badge:'icons/icon-192.png', tag:'tk-' + Date.now(), lang:'hi'};
+  const fallback = () => { try { new Notification(title, opts); } catch(e){} };
+  if (navigator.serviceWorker && navigator.serviceWorker.getRegistration) {
+    navigator.serviceWorker.getRegistration().then(r => r ? r.showNotification(title, opts) : fallback()).catch(fallback);
+  } else fallback();
+}
 function alertUser(title, body, kind){
   toast(title + ': ' + body, kind);
   chime();
   let bg = document.hidden;
   try { if (NATIVE && NATIVE.isForeground && !NATIVE.isForeground()) bg = true; } catch(e){}
-  if (NATIVE && NATIVE.notifyUser && bg) { try { NATIVE.notifyUser(title, body); } catch(e){} }
+  if (!bg) return;
+  if (NATIVE && NATIVE.notifyUser) { try { NATIVE.notifyUser(title, body); } catch(e){} }
+  else systemNotify(title, body);
 }
+function notifDismissed(){ try { return localStorage.getItem('tk.notif.later') === '1'; } catch(e){ return false; } }
 function toast(msg, kind){
   const el = document.createElement('div');
   el.className = 'toast ' + (kind || ''); el.textContent = msg;
@@ -884,9 +915,8 @@ function focusLater(sel){ setTimeout(() => { const n = $(sel); if (n) n.focus();
 function tabList(){
   const k = viewerKind();
   if (k === 'admin') return [['home','आज'],['all','सभी Tasks'],['admin','Admin Panel'],['report','Report']];
-  if (k === 'giver') return [['mine','मेरे Tasks'],['home','Task दें'],['all','सभी Tasks'],['report','Report']];
-  if (k === 'lead') return [['mine','मेरे Tasks'],['home','Task दें'],['all','सभी Tasks']];
-  return [['mine','मेरे Tasks'],['all','सभी Tasks']];
+  if (k === 'giver' || k === 'lead') return [['mine','मुझे मिले'],['home','Task दें'],['all','मेरे सारे Tasks']];
+  return [['mine','मुझे मिले'],['all','मेरे सारे Tasks']];
 }
 
 function doRender(){
@@ -902,6 +932,7 @@ function doRender(){
   if (!S.actor) { renderTabs([]); patch($('#who'), ''); show('login'); renderLogin(); return; }
   const liveReady = S.live.team && S.live.groups && S.live.open && S.live.done;
   if (!liveReady) { renderWho(); renderTabs([]); show('loading'); $('#load-h').textContent = 'Tasks खुल रहे हैं…'; return; }
+  if (S.actor === 'owner' && !S.settings.visV2 && !S.migrateTried) { S.migrateTried = true; migrateTasks(); }
   renderWho();
   if (S.tab === 'account') { renderTabs(tabList(), true); show('account'); renderAccount(); return; }
   const tabs = tabList();
@@ -929,6 +960,7 @@ function renderBanner(){
   let h = '', bad = false;
   if (S.preview && S.actor) h = '<span>आप <b>' + esc(nameOf(S.preview)) + '</b> की नज़र से देख रहे हैं. यहाँ से कुछ बदलेगा नहीं.</span><button class="btn sm" type="button" data-act="preview-exit">Admin view पर लौटें</button>';
   else if (S.offline && S.actor) { h = '<span>Internet नहीं है. आप काम करते रहें — बदलाव phone में save रहेंगे और Internet आते ही sync होंगे.</span>'; bad = true; }
+  else if (S.actor && canNotify() && Notification.permission === 'default' && !notifDismissed()) h = '<span>नया Task या पूरा हुआ काम आते ही phone/computer पर सूचना पाने के लिए Notification चालू करें.</span><button class="btn sm primary" type="button" data-act="notif-on">चालू करें</button><button class="linkb" type="button" data-act="notif-later">बाद में</button>';
   b.hidden = !h; b.classList.toggle('bad', bad); patch(bi, h);
 }
 function renderTabs(tabs, none){
@@ -941,7 +973,7 @@ function renderTabs(tabs, none){
       const fresh = open.filter(t => !(t.seenBy || {})[mid] || S.newAtLoad.has(t.id)).length;
       if (open.length) n = '<span class="n' + (fresh ? ' hot' : '') + '">' + open.length + '</span>';
     }
-    if (k === 'home') { const l = (isAdmin() ? S.tasks : S.tasks.filter(canManage)).filter(isLate).length; if (l) n = '<span class="n hot">' + l + ' देर</span>'; }
+    if (k === 'home') { const l = (isAdmin() ? S.tasks : vis().filter(canManage)).filter(isLate).length; if (l) n = '<span class="n hot">' + l + ' देर</span>'; }
     h += '<button class="tab" type="button" data-act="tab" data-v="' + k + '"' + (!none && S.tab === k ? ' aria-current="page"' : '') + '>' + label + n + '</button>';
   }
   patch($('#tabs'), h);
@@ -1074,9 +1106,31 @@ function renderAccount(){
 function stopSubs(){ S.subs.forEach(u => { try { u(); } catch(e){} }); S.subs = []; S.live = {team:false, groups:false, open:false, done:false}; S.team = []; S.teamMap = {}; S.groups = []; S.groupMap = {}; S.openMap = {}; S.doneMap = {}; S.tasks = []; S.taskMap = {}; S.logins = {}; S.loginOf = {}; S.phones = {}; }
 function onSubErr(e){
   const c = (e && e.code) || '';
-  console.warn('listen error', c, e);
-  if (/permission-denied/.test(c) && S.actor && S.actor !== 'owner') { S.loginMsg = 'आपका Login बंद कर दिया गया है. Admin से बात करें.'; logout(); }
-  else if (/permission-denied/.test(c)) toast('Data नहीं खुल पाया: Firebase में security rules देखें.', 'bad');
+  console.warn('listen error', c, e && e.message);
+  if (/permission-denied/.test(c) && !S.errToasted) { S.errToasted = true; toast('कुछ Data नहीं खुल पाया. Admin Firebase में नए security rules paste करें.', 'bad'); }
+}
+function taskListenErr(which){
+  return e => {
+    onSubErr(e);
+    if (which === 'done') { S.doneErr = (e && e.message) || 'error'; S.doneMap = {}; mergeTasks(); S.live.done = true; }
+    else S.live.open = true;
+    render();
+  };
+}
+const lastLog = t => Object.values(t.log || {}).sort((a,b) => (b.at || 0) - (a.at || 0))[0];
+async function migrateTasks(){
+  if (S.actor !== 'owner' || S.preview) return;
+  try {
+    const all = await B.db.getQuery('tasks', []);
+    const ops = [];
+    for (const x of all) {
+      const t = Object.assign({id:x.id}, x.data);
+      const w = watchersFor(t), of = t.status === 'done' ? [] : w;
+      if (!sameList(t.watchers, w) || !sameList(t.openFor, of)) ops.push({op:'update', path:'tasks/' + t.id, data:{watchers:w, openFor:of}});
+    }
+    for (let i = 0; i < ops.length; i += 400) await B.db.batch(ops.slice(i, i + 400));
+    await B.db.update('config/app', {visV2: true});
+  } catch (e) { console.warn('migrate', e); S.migrateTried = false; }
 }
 function mergeTasks(){
   const m = Object.assign({}, S.openMap);
@@ -1098,21 +1152,27 @@ function startSubs(){
     S.groupMap = Object.fromEntries(S.groups.map(g => [g.id, g]));
     S.live.groups = true; render();
   }, onSubErr);
-  W('tasks', [['status','in',['todo','doing']]], (list, changes) => {
+  const admin = S.actor === 'owner';
+  const openQ = admin ? [['status','in',['todo','doing']]] : [['openFor','array-contains', S.actor]];
+  const doneQ = admin ? [['doneAt','>=', S.since]] : [['watchers','array-contains', S.actor], ['doneAt','>=', S.since]];
+  W('tasks', openQ, (list, changes) => {
     const first = !S.live.open;
     S.openMap = Object.fromEntries(list.map(x => [x.id, Object.assign({id:x.id}, x.data)]));
     mergeTasks();
     if (!first) for (const ch of changes) {
       if (ch.type !== 'added' || ch.pending) continue;
       const t = S.taskMap[ch.id];
-      if (!t || S.actor === 'owner' || !isMine(t, S.actor) || (t.createdBy || 'owner') === S.actor) continue;
+      if (!t || S.actor === 'owner' || !isMine(t, S.actor)) continue;
+      const last = lastLog(t);
+      if (last && last.type === 'reopened' && last.by !== S.actor && Date.now() - (last.at || 0) < 10*60000) { alertUser('Task वापस खुला', short(t.title, 80) + (last.text ? ' — ' + short(last.text, 60) : ''), 'new'); continue; }
+      if ((t.createdBy || 'owner') === S.actor) continue;
       if ((t.seenBy || {})[S.actor] || Date.now() - (t.createdAt || 0) > 10*60000) continue;
       S.newAtLoad.add(t.id);
-      alertUser('नया Task', short(t.title, 80), 'new');
+      alertUser('नया Task · ' + nameOf(t.createdBy || 'owner') + ' से', short(t.title, 80), 'new');
     }
     S.live.open = true; render();
-  }, onSubErr);
-  W('tasks', [['doneAt','>=', S.since]], (list, changes) => {
+  }, taskListenErr('open'));
+  W('tasks', doneQ, (list, changes) => {
     const first = !S.live.done;
     S.doneMap = Object.fromEntries(list.map(x => [x.id, Object.assign({id:x.id}, x.data)]));
     mergeTasks();
@@ -1122,8 +1182,8 @@ function startSubs(){
       if (!t || t.status !== 'done' || t.doneBy === S.actor || Date.now() - (t.doneAt || 0) > 10*60000) continue;
       if (S.actor === 'owner' || (t.createdBy || 'owner') === S.actor) alertUser('✓ ' + nameOf(t.doneBy) + ' ने पूरा किया', short(t.title, 70), 'ok');
     }
-    S.live.done = true; render();
-  }, onSubErr);
+    S.doneErr = null; S.live.done = true; render();
+  }, taskListenErr('done'), admin ? undefined : {orderBy:['doneAt','desc']});
   D('config/counter', s => { S.counter = s.exists ? (s.data.n || 0) : 0; }, () => {});
   if (S.actor === 'owner') {
     W('logins', [], list => {
@@ -1219,7 +1279,7 @@ function regList(list, cap){
 /* ---------- home ---------- */
 function renderHome(){
   const admin = isAdmin(), td = today();
-  const scope = admin ? S.tasks : S.tasks.filter(canManage);
+  const scope = admin ? S.tasks : vis().filter(canManage);
   const T = targets();
   const open = scope.filter(isOpen), late = open.filter(isLate);
   const given = scope.filter(t => t.createdDay === td).length;
@@ -1261,8 +1321,8 @@ function renderHome(){
   if (ms.length) {
     p = '<div class="sec"><div class="sec-h"><h2>किसके पास कितना काम</h2><span class="muted">नाम दबाकर उनके Tasks देखें</span></div><div class="reg">' +
       ms.map(m => {
-        const mo = S.tasks.filter(t => isOpen(t) && isMine(t, m.id)), ml = mo.filter(isLate).length;
-        const md = S.tasks.filter(t => t.status === 'done' && t.doneDay === td && t.doneBy === m.id).length;
+        const mo = vis().filter(t => isOpen(t) && isMine(t, m.id)), ml = mo.filter(isLate).length;
+        const md = vis().filter(t => t.status === 'done' && t.doneDay === td && t.doneBy === m.id).length;
         return '<button class="person" type="button" data-act="filter-who" data-v="m:' + esc(m.id) + '"><span class="ini" aria-hidden="true">' + esc(initial(m.name)) + '</span><span class="pn"><b>' + esc(m.name) + '</b><small>' + esc(m.role || 'Team') + '</small></span>' +
           '<span class="pcs"><span class="' + (mo.length ? '' : 'z') + '"><b>' + mo.length + '</b>बाकी</span><span class="' + (ml ? 'l' : 'z') + '"><b>' + ml + '</b>देर</span><span class="' + (md ? 'o' : 'z') + '"><b>' + md + '</b>आज पूरे</span></span></button>';
       }).join('') + '</div></div>';
@@ -1323,6 +1383,9 @@ async function submitComposer(ev){
   const base = { title, details: $('#c-details').value.trim(), kind, memberId: kind === 'person' ? who : null, groupId: kind === 'group' ? who : null,
     viaGroup: kind === 'person' ? viaGroupFor(who) : null,
     due: $('#c-due').value || '', priority: $('#c-urgent').checked ? 'urgent' : 'normal', updatedAt: now };
+  const creator = S.editing && S.taskMap[S.editing] ? (S.taskMap[S.editing].createdBy || 'owner') : by;
+  base.watchers = watchersFor({kind, memberId: base.memberId, groupId: base.groupId, createdBy: creator});
+  base.openFor = base.watchers;
   const btn = $('#c-submit'); btn.disabled = true;
   if (S.editing) {
     const id = S.editing, t = S.taskMap[id];
@@ -1360,7 +1423,7 @@ function renderAfter(){
 function renderMine(){
   const mid = me();
   if (!mid) return;
-  const mine = S.tasks.filter(t => isMine(t, mid));
+  const mine = vis().filter(t => isMine(t, mid));
   if (S.newInitFor !== mid) {
     S.newAtLoad = new Set(mine.filter(t => isOpen(t) && !(t.seenBy || {})[mid]).map(t => t.id));
     S.newInitFor = mid;
@@ -1374,6 +1437,7 @@ function renderMine(){
   if (fresh.length) h += '<div class="sec"><div class="sec-h"><h2>नए Tasks</h2><span class="muted">' + fresh.length + '</span></div>' + regList(fresh) + '</div>';
   h += '<div class="sec"><div class="sec-h"><h2>करने हैं</h2><span class="muted">' + open.length + '</span></div>' +
     (open.length ? regList(open) : '<div class="empty">' + (fresh.length ? 'बाकी सब काम ऊपर “नए” में हैं.' : 'जब आपको या आपके ग्रुप को Task मिलेगा, वो यहाँ दिखेगा.') + '</div>') + '</div>';
+  if (S.doneErr) h += '<p class="more-note">पिछले दिनों के पूरे Tasks अभी नहीं खुल पाए. Admin Firebase में index बना दें, फिर ये दिखने लगेंगे.</p>';
   if (done.length) h += '<div class="sec"><div class="sec-h"><h2>पिछले ' + RECENT_DAYS + ' दिन में पूरे किए</h2><span class="muted">' + done.length + '</span></div>' + regList(done, 30) + '</div>';
   patch($('#mine-body'), h);
   setTimeout(() => markSeen(mine.filter(isOpen)), 900);
@@ -1399,7 +1463,7 @@ function renderAll(){
   sel.value = S.fWho;
   document.querySelectorAll('#f-status .fchip').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === S.fStatus)));
   const merged = Object.assign({}, S.older, S.taskMap);
-  let list = Object.values(merged);
+  let list = vis(Object.values(merged));
   if (S.fWho.startsWith('m:')) { const id = S.fWho.slice(2); list = list.filter(t => isMine(t, id)); }
   else if (S.fWho.startsWith('g:')) { const id = S.fWho.slice(2); list = list.filter(t => t.kind === 'group' && t.groupId === id); }
   if (S.fStatus === 'open') list = list.filter(isOpen).sort(openSort);
@@ -1409,7 +1473,8 @@ function renderAll(){
   const q = S.fQ.trim().toLowerCase();
   if (q) { const qd = q.replace(/\D/g,''); list = list.filter(t => (t.title || '').toLowerCase().includes(q) || (t.details || '').toLowerCase().includes(q) || (qd && fmtNo(t.no).includes(qd))); }
   let h;
-  if (!Object.keys(merged).length) h = '<div class="empty"><b>अभी कोई Task नहीं है.</b> Task मिलते ही यहाँ सबके Tasks दिखेंगे.</div>';
+  if (!vis(Object.values(merged)).length) h = isAdmin() ? '<div class="empty"><b>अभी कोई Task नहीं है.</b> Task देते ही यहाँ सबके Tasks दिखेंगे.</div>'
+    : '<div class="empty"><b>अभी आपसे जुड़ा कोई Task नहीं है.</b> यहाँ सिर्फ वही Tasks दिखते हैं जो आपको मिले हैं या आपने दिए हैं.</div>';
   else if (!list.length) h = '<div class="empty">इस छँटाई में कोई Task नहीं मिला.</div>';
   else h = '<div class="sec-h"><span class="muted">' + nTasks(list.length) + '</span></div>' + regList(list);
   patch($('#all-list'), h);
@@ -1425,7 +1490,8 @@ async function loadOlder(){
   S.olderBusy = true; render();
   try {
     const before = S.olderCursor || S.since;
-    const list = await B.db.getQuery('tasks', [['doneAt','<', before]], {orderBy:['doneAt','desc'], limit:50});
+    const f = S.actor === 'owner' ? [['doneAt','<', before]] : [['watchers','array-contains', S.actor], ['doneAt','<', before]];
+    const list = await B.db.getQuery('tasks', f, {orderBy:['doneAt','desc'], limit:50});
     list.forEach(x => { S.older[x.id] = Object.assign({id:x.id}, x.data); });
     if (list.length) S.olderCursor = list[list.length - 1].data.doneAt;
     if (list.length < 50) S.olderEnd = true;
@@ -1606,7 +1672,15 @@ async function submitGroup(e){
   const leads = memberIds.filter(id => S.gSel.get(id) === 'full');
   const btn = $('#g-submit'); btn.disabled = true;
   let ok;
-  if (S.gEdit) ok = await write('groups/' + S.gEdit, 'update', {name, memberIds, leads});
+  if (S.gEdit) {
+    ok = await write('groups/' + S.gEdit, 'update', {name, memberIds, leads});
+    const gid = S.gEdit;
+    const ops = S.tasks.filter(t => t.kind === 'group' && t.groupId === gid).map(t => {
+      const w = watchersFor(t, memberIds);
+      return {op:'update', path:'tasks/' + t.id, data:{watchers:w, openFor: isOpen(t) ? w : []}};
+    });
+    if (ok && ops.length) await batch(ops);
+  }
   else ok = await write('groups/' + B.db.newId('groups'), 'set', {name, memberIds, leads, active:true, createdAt:Date.now()});
   btn.disabled = false;
   if (ok) { toast(S.gEdit ? 'ग्रुप बदल दिया गया.' : 'ग्रुप “' + name + '” बन गया.', 'ok'); resetGroup(); render(); }
@@ -1676,6 +1750,7 @@ function reportText(D, R){
   return L.join('\n');
 }
 function renderReport(){
+  if (!isAdmin()) return;
   if (!S.reportDay) S.reportDay = today();
   const D = S.reportDay, td = today();
   const inp = $('#r-day'); if (inp.value !== D) inp.value = D; inp.max = td;
@@ -1735,8 +1810,8 @@ function setStatus(t, status, note){
   const now = Date.now(), by = isAdmin() ? 'owner' : S.actor, k = logKey(now);
   let data;
   if (status === 'doing') data = {status:'doing', updatedAt:now, log:{[k]:{by, type:'started', at:now}}};
-  else if (status === 'done') data = {status:'done', doneAt:now, doneDay:today(), doneBy:by, doneNote:note || '', updatedAt:now, log:{[k]:{by, type:'done', text:note || '', at:now}}};
-  else data = {status:'todo', doneAt:null, doneDay:null, doneBy:null, doneNote:'', updatedAt:now, log:{[k]:{by, type:'reopened', text:note || '', at:now}}};
+  else if (status === 'done') data = {status:'done', doneAt:now, doneDay:today(), doneBy:by, doneNote:note || '', openFor:[], updatedAt:now, log:{[k]:{by, type:'done', text:note || '', at:now}}};
+  else data = {status:'todo', doneAt:null, doneDay:null, doneBy:null, doneNote:'', openFor: Array.isArray(t.watchers) && t.watchers.length ? t.watchers : watchersFor(t), updatedAt:now, log:{[k]:{by, type:'reopened', text:note || '', at:now}}};
   if (by !== 'owner' && isMine(t, by) && !(t.seenBy || {})[by]) data.seenBy = {[by]: now};
   return write('tasks/' + t.id, 'update', data);
 }
@@ -1752,6 +1827,8 @@ document.addEventListener('click', async ev => {
       else S.tab = v || S.prevTab;
       closeInline(); render(); window.scrollTo({top:0}); break;
     case 'logout': S.loginMsg = ''; logout(); break;
+    case 'notif-on': try { Notification.requestPermission().then(p => { toast(p === 'granted' ? 'Notification चालू हो गए.' : 'Notification बंद रहेंगे. Browser की settings से चालू कर सकते हैं.', p === 'granted' ? 'ok' : ''); render(); }); } catch(e){} break;
+    case 'notif-later': try { localStorage.setItem('tk.notif.later', '1'); } catch(e){} render(); break;
     case 'forgot-open': { const f = $('#forgot'); f.hidden = !f.hidden; if (!f.hidden) focusLater('#f-email'); break; }
     case 'forgot-send': sendReset(); break;
     case 'expand': if (S.expanded.has(id)) S.expanded.delete(id); else S.expanded.add(id); render(); break;

@@ -7,6 +7,7 @@
   function setDot(obj, dotted, val){ const ks = dotted.split('.'); let o = obj; for (let i = 0; i < ks.length - 1; i++) { if (typeof o[ks[i]] !== 'object' || o[ks[i]] === null) o[ks[i]] = {}; o = o[ks[i]]; } o[ks[ks.length-1]] = clone(val); }
   function match(d, f){ const v = d[f[0]]; switch (f[1]) {
     case '==': return v === f[2]; case 'in': return f[2].includes(v);
+    case 'array-contains': return Array.isArray(v) && v.includes(f[2]);
     case '>=': return v != null && typeof v === typeof f[2] && v >= f[2];
     case '>': return v != null && typeof v === typeof f[2] && v > f[2];
     case '<': return v != null && typeof v === typeof f[2] && v < f[2];

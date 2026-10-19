@@ -56,7 +56,7 @@ GitHub Pages settings and Actions secrets cannot be changed from the session; th
 | `groups/{groupId}` | `name`, `memberIds[]`, `leads[]` (Full control), `active`, `createdAt` | members read; admin writes |
 | `logins/{loginId}` | `email`, `uid`, `memberId` | public get (login lookup); admin list/write |
 | `private/contacts` | `phones{memberId: '91…'}` | admin only |
-| `tasks/{taskId}` | `no`, `title`, `details`, `kind` ('person'/'group'), `memberId`, `groupId`, `viaGroup`, `due` (YYYY-MM-DD), `priority` ('normal'/'urgent'), `status` ('todo'/'doing'/'done'), `createdAt`, `createdDay`, `createdBy` (memberId or 'owner'), `doneAt`, `doneDay`, `doneBy`, `doneNote`, `seenBy{memberId: ms}`, `log{key: {by, type, text, at}}`, `updatedAt` | see rules |
+| `tasks/{taskId}` | `no`, `title`, `details`, `kind` ('person'/'group'), `memberId`, `groupId`, `viaGroup`, `due` (YYYY-MM-DD), `priority` ('normal'/'urgent'), `status` ('todo'/'doing'/'done'), `createdAt`, `createdDay`, `createdBy` (memberId or 'owner'), `doneAt`, `doneDay`, `doneBy`, `doneNote`, `seenBy{memberId: ms}`, `log{key: {by, type, text, at}}`, `updatedAt`, **`watchers[]`** (creator if a member + person assignee or all group members), **`openFor[]`** (= watchers while not done, `[]` when done) | see rules |
 
 Logins: Admin signs in with his real Gmail (password reset by email works). Members get a short Login ID (`[a-z0-9._@-]{3,60}`);
 the real Auth account is a synthetic email `<slug>-<rand>@task-management-5b21b.firebaseapp.com` stored in `logins/{loginId}`.
@@ -70,8 +70,17 @@ Admin creates member accounts through a **secondary Firebase app** (persistence 
 - **Task दे सकता है** (`team.canAssign`): can give tasks to anyone/any group; sees "Task दें" + Report tabs.
 - **Full control in a group** (`groups.leads`): can give tasks to that group and its members (person tasks carry `viaGroup`),
   and manage (edit/delete/reopen/mark) that group's tasks.
-- **Simple**: sees "मेरे Tasks" and "सभी Tasks" (everyone can see all tasks — owner's choice); may only change progress fields
-  (`status`, `doneAt`, `doneDay`, `doneBy`, `doneNote`, `updatedAt`, `log`, `seenBy`) on tasks assigned to them; cannot reopen a done task.
+- **Simple**: may only change progress fields (`status`, `doneAt`, `doneDay`, `doneBy`, `doneNote`, `updatedAt`, `log`, `seenBy`,
+  `openFor` → only to `[]`) on tasks assigned to them; cannot reopen a done task.
+- **Visibility (owner's rule, Oct 2026):** Admin sees every task. Everyone else sees ONLY tasks they gave or received
+  (group task → all members of that group). E.g. Nishant→Darshana is seen by Nishant, Darshana and Admin — not Akash, not Payal.
+  Enforced by `canSee()` in rules (`myMid() in watchers || myMid() in openFor`) and by member queries:
+  open = `openFor array-contains me`; recent done / older = `watchers array-contains me` + `doneAt` (composite index in
+  `firestore.indexes.json`: watchers CONTAINS + doneAt DESC — must exist in Firebase). `vis()` filters lists in the UI
+  (also for Admin's "इनकी नज़र से देखें" preview). Keep `watchers`/`openFor` correct on every write: create/edit (`watchersFor()`),
+  done (`openFor:[]`), reopen (`openFor:watchers`), group member edit (Admin rewrites that group's tasks).
+  Admin's app back-fills old tasks once (`migrateTasks()`, flag `config/app.visV2`).
+- Tabs: Admin = आज · सभी Tasks · Admin Panel · Report. Members = मुझे मिले · (Task दें if they can give) · मेरे सारे Tasks. Report is Admin-only.
 - A task's creator can always manage it. UI helpers: `perms()`, `targets()`, `canManage()`, `canActOn()`, `viaGroupFor()`.
 
 ## Read budget (Spark plan: 50K reads/day, 20K writes/day)
@@ -83,8 +92,10 @@ Avoid queries needing composite indexes (sort client-side instead).
 
 ## Notifications
 
-In-app toast + chime + vibrate when the app is open; `TeamKaamApp.notifyUser` shows a phone notification when the APK is in the
-background but still alive. True push when the app is closed needs FCM + Cloud Functions → Blaze plan (not set up).
+In-app toast + chime + vibrate when the app is open. When the app is in the background but still alive: APK → `TeamKaamApp.notifyUser`
+(native notification); browser → `systemNotify()` via the service worker (`showNotification`) after the user taps "Notification चालू करें"
+(banner; "बाद में" stored in localStorage `tk.notif.later`). Events: new task to me, task reopened for me, task I gave (or any, for Admin) marked done.
+True push when the app is fully closed needs FCM + Cloud Functions → Blaze plan (proposed to the owner, not set up yet).
 WhatsApp buttons (`wa.me`) are the fallback ping; phone numbers are admin-only.
 
 ## How to make a change (the routine)
